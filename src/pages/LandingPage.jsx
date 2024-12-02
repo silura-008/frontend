@@ -1,7 +1,16 @@
 import React from 'react'
+import Navbar from '../components/Navbar'
+import Hero from '../components/Hero'
+import Features from '../components/Features'
+import Footer from '../components/Footer'
 function LandingPage() {
   return (
-    <h2 className="text-blue-800 text-3xl">LandingPage</h2>
+   <>
+    <Navbar/>
+    <Hero/>
+    <Features/>
+    <Footer/>
+   </>
   )
 }
 
