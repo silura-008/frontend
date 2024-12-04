@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@300..700&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,4 +8,10 @@
     box-sizing: border-box;
     margin: 0;
     padding: auto;
+}
+
+@layer components {
+    .lbtn{
+        @apply border border-[#00413d] rounded font-bold p-3 px-5 text-[#00413d] hover:bg-[#00413d] hover:text-white duration-300 ease-in-out hover:border-white
+    }
 }

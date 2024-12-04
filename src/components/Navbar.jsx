@@ -1,18 +1,24 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 function Navbar() {
   return (
-    <div className='flex items-center justify-between p-5 pt-4 bg-blue-600'>
-        <h3 className='text-xl font-semibold text-white  lg:ml-5'>MindCare</h3>
-        <div className='hidden lg:flex mr-5'>
-        <button className="font-bold rounded border border-white p-3 px-4 bg-blue-800 shadow-inner text-white mr-6 hover:bg-blue-500  hover:ring-blue-300 duration-300 ease-in-out">
+    <div className='flex items-center justify-between font-comfortaa  p-5 pt-4  bg-[#00413d] '>
+        <h3 className=' md:pl-10 text-xl font-black  text-white md:ml-5'>MindCare</h3>
+        <div className='hidden md:flex mr-5'>
+        <Link to={"/Register"}>
+          <button className=" bg-white  p-3 mr-5 lbtn">
           Register
-        </button>
-        <button className="font-bold rounded border border-white p-3 px-6 bg-blue-800 shadow-inner text-white hover:bg-blue-500  hover:ring-blue-300 duration-300 ease-in-out">
-          Login
-        </button>
+          </button>
+          </Link>
+          <Link to={"/Login"}>
+            <button className="lbtn bg-white">
+            Login
+            </button>
+          </Link>
         </div>
     </div>
   )
 }
-
+// f0f8ff alice white
+// 00413d main bg
 export default Navbar
