@@ -13,7 +13,6 @@ function Register() {
       video: false,
       articles: false,
       books: false,
-      music: false,
     }
   });
 
@@ -38,17 +37,18 @@ function Register() {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Handle form submission logic (e.g., send data to API)
+    
     console.log(formData);
   };
 
   return (
-    <div className="h-[100vh] flex font-comfortaa ">
+    <div className="h-screen flex font-comfortaa  ">
       {/* Left Section */}
-      <div className='w-full lg:w-[50%] p-14 pt-24 md:p-48 md:pt-40 lg:p-36 lg:pl-40 lg:pt-36 '>
-      <div className=' border rounded-lg p-4 lg:p-2'>
-              <h3 className="font-black text-2xl mb-4">Create an Account</h3>
-              <p>
-                Already have an account? <Link to="/Login"><a href="#">Login</a></Link>
+      <div className='w-full lg:w-[50%] bg-[#00413d] flex items-center justify-center'>
+      <div className=' border rounded-lg p-10 lg:p-5 lg:px-11 md:px-14 shadow-[0_0_10px_#00413d] bg-white '>
+              <h3 className="font-black text-2xl mb-3 text-[#00413d] md:pr-14 ">Create an Account</h3>
+              <p className='text-sm text-gray-400'>
+                Already have an account? <Link to="/Login"><a href="#" className='text-[#04a298]'>Login</a></Link>
               </p>
 
               <form onSubmit={handleSubmit} className="mt-4">
@@ -115,7 +115,7 @@ function Register() {
                 {/* Preferences */}
                 <div className="mb-4">
                   <label className="block mb-2">Select Your Preferences:</label>
-                  <div className="flex flex-col">
+                  <div className="flex justify-around">
                     <label>
                       <input
                         type="checkbox"
@@ -148,30 +148,22 @@ function Register() {
                         onChange={handleChange}
                       /> Books
                     </label>
-                    <label>
-                      <input
-                        type="checkbox"
-                        name="music"
-                        checked={formData.preferences.music}
-                        onChange={handleChange}
-                      /> Music
-                    </label>
                   </div>
                 </div>
                 {/* terms */}
-                <div className="mb-4">
+                <div className="mb-2 text-sm">
                 <label label>
                  <input
                     type="checkbox"
                     name="agreeToTerms"
                     required 
-                 /> I agree to the <a href="/terms" className="text-blue-500">Terms and Conditions</a>
+                 /> I agree to the <a href="/terms" className="text-[#04a298]">Terms and Conditions</a>
                </label>
                 </div>
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full p-2 bg-blue-500 text-white rounded mt-4"
+                  className="w-full p-2 bg-[#00413d] hover:bg-[#047a6d] text-white rounded mt-1 duration-200 ease-in-out"
                 >
                   Sign Up
                 </button>
