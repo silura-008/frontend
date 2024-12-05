@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import Register_img from '../assets/Register_img.jpg';
 
@@ -17,7 +17,9 @@ function Register() {
   });
   const [submitted, setSubmitted] = useState(false);
   const [verified, setVerified] = useState(false);
-  
+  const [otp, setOtp] = useState(['', '', '', '']);
+  const inputRefs = useRef([]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,6 +39,23 @@ function Register() {
     }
   };
 
+  const handleOtpChange = (index, value) => {
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    if (value && index < 3) {
+      inputRefs.current[index + 1].focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs.current[index - 1].focus();
+    }
+  };
+
+
   const handleSubmit = (e) => {
     e.preventDefault();
     // Handle form submission logic (e.g., send data to API)
@@ -49,7 +68,12 @@ function Register() {
   const handleVerify = (e) =>{
     e.preventDefault();
     // Handle Email verification
-    setVerified(true);
+    
+    const otpString = otp.join('');
+    // OTP verification logic
+    if (otpString.length === 4) {
+      setVerified(true);
+    }
 
   }
 
@@ -78,7 +102,20 @@ function Register() {
          (<div className=' border rounded-lg p-10 lg:p-6 lg:px-11 md:px-14 shadow-[0_0_10px_#00413d] bg-white '>
           <h2 className="font-black text-2xl mb-3 text-[#00413d] md:pr-14 ">Check Your Inbox</h2>
           <p className="text-sm text-gray-500 ">Please check <span className='block text-[#04a298] font-bold text-base hover:text-[#00413d]'>{formData['email']}</span> to confirm your account </p>
-          
+          <div className="flex space-x-2 mb-6 mt-4 justify-center">
+              {otp.map((digit, index) => (
+                <input
+                  key={index}
+                  ref={(el) => inputRefs.current[index] = el}
+                  type="text"
+                  maxLength="1"
+                  value={digit}
+                  onChange={(e) => handleOtpChange(index, e.target.value)}
+                  onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                  className="w-12 h-12 text-center text-xl border-2 border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+                />
+              ))}
+            </div>
           <button
                   className="w-full p-2 bg-[#00413d] hover:bg-[#047a6d] text-white rounded mt-6 duration-200 ease-in-out"
                   onClick={handleVerify}
