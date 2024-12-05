@@ -46,10 +46,18 @@ function Register() {
 
   return (
     <div className="h-screen flex font-comfortaa  ">
-      {/* Left Section */}
+      {/* Left Section with Image */}
+      <div className="hidden lg:block lg:w-[50%] ">
+        <img src={Register_img} alt="Register" className="w-full h-full " />
+      </div>
+      {/* Right Section*/}
       <div className='w-full lg:w-[50%] bg-[#00413d] flex items-center justify-center'>
         {(submitted ?
-         <h1>done</h1> 
+         <div className=' border rounded-lg p-10 lg:p-6 lg:px-11 md:px-14 shadow-[0_0_10px_#00413d] bg-white '>
+          <h2 className="font-black text-2xl mb-3 text-[#00413d] md:pr-14 ">Check Your Inbox</h2>
+          <p className="text-sm text-gray-500">Please check <span className='text-[#04a298] font-bold'>{formData['email']}</span> to confirm your account </p>
+          
+         </div> 
       : 
       <div className=' border rounded-lg p-10 lg:p-6 lg:px-11 md:px-14 shadow-[0_0_10px_#00413d] bg-white '>
               <h3 className="font-black text-2xl mb-3 text-[#00413d] md:pr-14 ">Create an Account</h3>
@@ -177,10 +185,7 @@ function Register() {
             
       </div>)}
       </div>
-      {/* Right Section with Image */}
-      <div className="hidden lg:block lg:w-[50%] ">
-        <img src={Register_img} alt="Register" className="w-full h-full " />
-      </div>
+      
     </div>
   );
 }
