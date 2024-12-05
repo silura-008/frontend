@@ -16,6 +16,8 @@ function Register() {
     }
   });
   const [submitted, setSubmitted] = useState(false);
+  const [verified, setVerified] = useState(false);
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -44,6 +46,14 @@ function Register() {
     console.log(formData);
   };
 
+  const handleVerify = (e) =>{
+    e.preventDefault();
+    // Handle Email verification
+    setVerified(true);
+
+  }
+
+
   return (
     <div className="h-screen flex font-comfortaa  ">
       {/* Left Section with Image */}
@@ -53,16 +63,35 @@ function Register() {
       {/* Right Section*/}
       <div className='w-full lg:w-[50%] bg-[#00413d] flex items-center justify-center'>
         {(submitted ?
-         <div className=' border rounded-lg p-10 lg:p-6 lg:px-11 md:px-14 shadow-[0_0_10px_#00413d] bg-white '>
+         ( verified ? <div className=' bg-white w-full h-full content-center left text-center '>
+                        <h2 className="font-black text-2xl mb-3 text-[#00413d] ">Account Created <br /> Successfully !!</h2>
+                        <p className="text-sm text-gray-500 ">Login to your account to continue ...</p>
+                        
+                        <Link to="/Login"><button
+                                className="p-3 px-6 bg-[#00413d] hover:bg-[#047a6d] text-white rounded mt-6 duration-200 ease-in-out"
+                                
+                              >
+                                Login
+                        </button></Link>
+                      </div>
+          :
+         (<div className=' border rounded-lg p-10 lg:p-6 lg:px-11 md:px-14 shadow-[0_0_10px_#00413d] bg-white '>
           <h2 className="font-black text-2xl mb-3 text-[#00413d] md:pr-14 ">Check Your Inbox</h2>
-          <p className="text-sm text-gray-500">Please check <span className='text-[#04a298] font-bold'>{formData['email']}</span> to confirm your account </p>
+          <p className="text-sm text-gray-500 ">Please check <span className='block text-[#04a298] font-bold text-base hover:text-[#00413d]'>{formData['email']}</span> to confirm your account </p>
           
-         </div> 
+          <button
+                  className="w-full p-2 bg-[#00413d] hover:bg-[#047a6d] text-white rounded mt-6 duration-200 ease-in-out"
+                  onClick={handleVerify}
+                >
+                  Verify
+          </button>
+          
+         </div> ))
       : 
       <div className=' border rounded-lg p-10 lg:p-6 lg:px-11 md:px-14 shadow-[0_0_10px_#00413d] bg-white '>
               <h3 className="font-black text-2xl mb-3 text-[#00413d] md:pr-14 ">Create an Account</h3>
               <p className='text-sm text-gray-400'>
-                Already have an account? <Link to="/Login"><a href="#" className='text-[#04a298]'>Login</a></Link>
+                Already have an account? <Link to="/Login" className='text-[#04a298]'>Login</Link>
               </p>
 
               <form onSubmit={handleSubmit} className="mt-4">
@@ -171,7 +200,7 @@ function Register() {
                     type="checkbox"
                     name="agreeToTerms"
                     required 
-                 /> I agree to the <a href="/terms" className="text-[#04a298]">Terms and Conditions</a>
+                 /> I agree to the <Link href="/terms" className="text-[#04a298]">Terms and Conditions</Link>
                </label>
                 </div>
                 {/* Submit Button */}
