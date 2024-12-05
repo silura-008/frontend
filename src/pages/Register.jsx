@@ -15,6 +15,7 @@ function Register() {
       books: false,
     }
   });
+  const [submitted, setSubmitted] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,6 +38,8 @@ function Register() {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Handle form submission logic (e.g., send data to API)
+
+    setSubmitted(true);
     
     console.log(formData);
   };
@@ -45,7 +48,10 @@ function Register() {
     <div className="h-screen flex font-comfortaa  ">
       {/* Left Section */}
       <div className='w-full lg:w-[50%] bg-[#00413d] flex items-center justify-center'>
-      <div className=' border rounded-lg p-10 lg:p-5 lg:px-11 md:px-14 shadow-[0_0_10px_#00413d] bg-white '>
+        {(submitted ?
+         <h1>done</h1> 
+      : 
+      <div className=' border rounded-lg p-10 lg:p-6 lg:px-11 md:px-14 shadow-[0_0_10px_#00413d] bg-white '>
               <h3 className="font-black text-2xl mb-3 text-[#00413d] md:pr-14 ">Create an Account</h3>
               <p className='text-sm text-gray-400'>
                 Already have an account? <Link to="/Login"><a href="#" className='text-[#04a298]'>Login</a></Link>
@@ -169,7 +175,7 @@ function Register() {
                 </button>
               </form>
             
-      </div>
+      </div>)}
       </div>
       {/* Right Section with Image */}
       <div className="hidden lg:block lg:w-[50%] ">
