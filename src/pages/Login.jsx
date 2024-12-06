@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Register_img from '../assets/Register_img.jpg';
+import Login_img from '../assets/Login_img.jpg';
 
 function Login() {
   const navigate = useNavigate();
@@ -30,12 +30,12 @@ function Login() {
     <div className="h-screen flex font-comfortaa">
       {/* Left Section with Image */}
       <div className="hidden lg:block lg:w-[50%]">
-        <img src={Register_img} alt="Login" className="w-full h-full" />
+        <img src={Login_img} alt="Login" className="w-full h-full" />
       </div>
       
       {/* Right Section */}
       <div className='w-full lg:w-[50%] bg-[#00413d] flex items-center justify-center'>
-        <div className='border rounded-lg p-9 lg:p-6 lg:px-11 lg:py-10 md:px-13 shadow-[0_0_10px_#00413d] bg-white'>
+      <div className=' border rounded-lg p-8 lg:p-8  md:p-10 shadow-[0_0_10px_#00413d] bg-white '>
           <h3 className="font-black text-2xl mb-3  text-[#00413d] md:pr-14">Login to Your Account</h3>
           <p className='text-sm text-gray-400'>
             Don't have an account? <Link to="/Register" className='text-[#04a298]'>Sign Up</Link>

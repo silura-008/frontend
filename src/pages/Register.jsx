@@ -59,10 +59,11 @@ function Register() {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Handle form submission logic (e.g., send data to API)
-
-    setSubmitted(true);
-    
-    console.log(formData);
+    if (formData.password === formData.confirmPassword) {
+      setSubmitted(true);
+    }else{
+      alert("password do not match")
+    }
   };
 
   const handleVerify = (e) =>{
@@ -87,7 +88,7 @@ function Register() {
       {/* Right Section*/}
       <div className='w-full lg:w-[50%] bg-[#00413d] flex items-center justify-center'>
         {(submitted ?
-         ( verified ? <div className=' bg-white w-full h-full content-center left text-center '>
+         ( verified ? <div className=' bg-white w-full h-full content-center text-center '>
                         <h2 className="font-black text-2xl mb-3 text-[#00413d] ">Account Created <br /> Successfully !!</h2>
                         <p className="text-sm text-gray-500 ">Login to your account to continue ...</p>
                         
@@ -99,10 +100,10 @@ function Register() {
                         </button></Link>
                       </div>
           :
-         (<div className=' border rounded-lg p-10 lg:p-6 lg:px-11 md:px-14 shadow-[0_0_10px_#00413d] bg-white '>
-          <h2 className="font-black text-2xl mb-3 text-[#00413d] md:pr-14 ">Check Your Inbox</h2>
+         (<div className=' border rounded-lg p-8 lg:p-8  md:p-10 shadow-[0_0_10px_#00413d] bg-white '>
+          <h2 className="font-black text-2xl mb-3 text-[#00413d]">Check Your Inbox</h2>
           <p className="text-sm text-gray-500 ">Please check <span className='block text-[#04a298] font-bold text-base hover:text-[#00413d]'>{formData['email']}</span> to confirm your account </p>
-          <div className="flex space-x-2 mb-6 mt-4 justify-center">
+          <div className="flex space-x-2 mb-6 mt-4 justify-start">
               {otp.map((digit, index) => (
                 <input
                   key={index}
@@ -117,7 +118,7 @@ function Register() {
               ))}
             </div>
           <button
-                  className="w-full p-2 bg-[#00413d] hover:bg-[#047a6d] text-white rounded mt-6 duration-200 ease-in-out"
+                  className="w-full p-2 bg-[#00413d] hover:bg-[#047a6d] text-white rounded mt-1 duration-200 ease-in-out"
                   onClick={handleVerify}
                 >
                   Verify
@@ -125,7 +126,7 @@ function Register() {
           
          </div> ))
       : 
-      <div className=' border rounded-lg p-10 lg:p-6 lg:px-11 md:px-14 shadow-[0_0_10px_#00413d] bg-white '>
+      <div className=' border rounded-lg p-8 lg:p-6 lg:pt-7 lg:px-8 md:p-10 shadow-[0_0_10px_#00413d] bg-white '>
               <h3 className="font-black text-2xl mb-3 text-[#00413d] md:pr-14 ">Create an Account</h3>
               <p className='text-sm text-gray-400'>
                 Already have an account? <Link to="/Login" className='text-[#04a298]'>Login</Link>

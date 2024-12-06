@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import Register_img from '../assets/Register_img.jpg';
+import Login_img from '../assets/Login_img.jpg';
 
 function ForgotPassword() {
   const navigate = useNavigate();
@@ -67,12 +67,13 @@ function ForgotPassword() {
     <div className="h-screen flex font-comfortaa">
       {/* Left Section with Image */}
       <div className="hidden lg:block lg:w-[50%]">
-        <img src={Register_img} alt="Forgot Password" className="w-full h-full" />
+        <img src={Login_img} alt="Forgot Password" className="w-full h-full" />
       </div>
       
       {/* Right Section */}
       <div className='w-full lg:w-[50%] bg-[#00413d] flex items-center justify-center'>
-        <div className='border rounded-lg p-10 lg:p-6 lg:px-11 md:px-14 shadow-[0_0_10px_#00413d] bg-white'>
+        
+      <div className=' border rounded-lg p-8 lg:p-8  md:p-10 shadow-[0_0_10px_#00413d] bg-white '>
           {stage === 'email' && (
             <>
               <h3 className="font-black text-2xl mb-3 text-[#00413d] md:pr-14">Forgot Password?</h3>
@@ -109,7 +110,7 @@ function ForgotPassword() {
 
           {stage === 'verify' && (
             <>
-              <h2 className="font-black text-2xl mb-3 text-[#00413d]">Verify OTP</h2>
+              <h2 className="font-black text-2xl mb-3 text-[#00413d] pt-1">Verify OTP</h2>
               <p className="text-sm text-gray-500">
                 Please check <span className='block text-[#04a298] font-bold text-base hover:text-[#00413d]'>
                   {formData.email}

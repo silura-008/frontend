@@ -2,3 +2,7 @@ Register page :
     -handle from
     -verification
 
+Login | Forgot passworde:
+    -verify
+
+#change images
