@@ -35,8 +35,8 @@ function Login() {
       
       {/* Right Section */}
       <div className='w-full lg:w-[50%] bg-[#00413d] flex items-center justify-center'>
-        <div className='border rounded-lg p-10 lg:p-6 lg:px-11 md:px-14 shadow-[0_0_10px_#00413d] bg-white'>
-          <h3 className="font-black text-2xl mb-3 text-[#00413d] md:pr-14">Login to Your Account</h3>
+        <div className='border rounded-lg p-9 lg:p-6 lg:px-11 lg:py-10 md:px-13 shadow-[0_0_10px_#00413d] bg-white'>
+          <h3 className="font-black text-2xl mb-3  text-[#00413d] md:pr-14">Login to Your Account</h3>
           <p className='text-sm text-gray-400'>
             Don't have an account? <Link to="/Register" className='text-[#04a298]'>Sign Up</Link>
           </p>
@@ -74,7 +74,7 @@ function Login() {
 
             {/* Forgot Password */}
             <div className="mb-4 text-right">
-              <Link to="/forgot-password" className='text-sm text-[#04a298] hover:text-[#00413d]'>
+              <Link to="/forgot" className='text-sm text-[#04a298] hover:text-[#00413d]'>
                 Forgot Password?
               </Link>
             </div>
