@@ -7,6 +7,7 @@ import Register from './pages/Register.jsx'
 import DashBoard from  './pages/DashBoard.jsx'
 import ChatInterface from './pages/ChatInterface.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
+import ForgotPassword from './pages/ForgotPassword.jsx'
 import './index.css'
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
           <Route path="/dashboard" element={<DashBoard />} />
           <Route path="/chat" element={<ChatInterface />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path='/forgot' element={<ForgotPassword />} />
         </Routes>
       </Router>
     </>
