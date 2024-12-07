@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   MessageSquare, 
+  User, 
   LayoutDashboard, 
   LogOut, 
   ThumbsUp, 
@@ -9,7 +10,7 @@ import {
   ChevronRight, 
   Menu,
   Check,
-  X // Added for clear button
+  Bell
 } from 'lucide-react';
 
 const ChatInterface = () => {
@@ -26,8 +27,7 @@ const ChatInterface = () => {
       const newMsg = {
         id: messages.length + 1,
         sender: 'user',
-        text: newMessage,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        text: newMessage
       };
       setMessages(prevMessages => [...prevMessages, newMsg]);
       setNewMessage('');
@@ -38,7 +38,6 @@ const ChatInterface = () => {
           id: messages.length + 2,
           sender: 'bot',
           text: 'Thank you for sharing. Would you like to talk more about what\'s on your mind?',
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           feedback: null
         };
         setMessages(prev => [...prev, botResponse]);
@@ -46,19 +45,6 @@ const ChatInterface = () => {
     }
   };
 
-  // Clear chat functionality
-  const clearChat = () => {
-    setMessages([]);
-    setNotification({
-      icon: <Check className="text-green-500" />,
-      message: 'Chat cleared successfully'
-    });
-
-    // Clear notification after 3 seconds
-    setTimeout(() => {
-      setNotification(null);
-    }, 3000);
-  };
   const handleFeedback = (messageId, type) => {
     // If feedback is already set to the same type, do nothing
     const currentMessage = messages.find(msg => msg.id === messageId);
@@ -109,11 +95,13 @@ const ChatInterface = () => {
     }
   };
 
-
-  // Rest of the existing methods remain the same (handleFeedback, submitFeedback, etc.)
-
   const SidebarContent = () => (
     <nav className="space-y-2 px-4">
+      <SidebarItem 
+        icon={<User />} 
+        label="Profile"
+        isOpen={isSidebarOpen}
+      />
       <SidebarItem 
         icon={<LayoutDashboard />} 
         label="Dashboard"
@@ -137,7 +125,7 @@ const ChatInterface = () => {
       `}>
         <button 
           onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="absolute top-4 -right-4 z-10 p-2 rounded-full bg-white shadow-md"
+          className="absolute top-4 left-full -translate-x-1/2 z-10 p-2 rounded-full bg-white shadow-md"
         >
           {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
         </button>
@@ -166,12 +154,17 @@ const ChatInterface = () => {
         <div className="hidden md:flex bg-white p-4 items-center border-b">
           <h1 className="text-xl font-semibold flex-1">Mental Health Chat</h1>
           <div className="flex items-center space-x-4">
-            <button 
-              onClick={clearChat}
-              className="text-gray-600 hover:text-gray-800"
-            >
-              <X className="w-6 h-6" />
+            <button className="relative">
+              <Bell className="w-6 h-6 text-gray-600" />
+              {notification && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
+                  1
+                </span>
+              )}
             </button>
+            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white">
+              U
+            </div>
           </div>
         </div>
 
@@ -184,11 +177,13 @@ const ChatInterface = () => {
             <Menu />
           </button>
           <h1 className="text-xl font-semibold flex-1">Mental Health Chat</h1>
-          <button 
-            onClick={clearChat}
-            className="text-gray-600 hover:text-gray-800"
-          >
-            <X className="w-6 h-6" />
+          <button className="relative">
+            <Bell className="w-6 h-6 text-gray-600" />
+            {notification && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
+                1
+              </span>
+            )}
           </button>
         </div>
 
@@ -203,22 +198,19 @@ const ChatInterface = () => {
               <div 
                 key={msg.id}
                 className={`
-                  flex flex-col items-start space-y-1
-                  ${msg.sender === 'bot' ? 'items-start' : 'items-end'}
+                  flex items-start space-x-3
+                  ${msg.sender === 'bot' ? 'justify-start' : 'justify-end'}
                 `}
               >
                 <div 
                   className={`
-                    max-w-[70%] p-3 rounded-lg relative
+                    max-w-[70%] p-3 rounded-lg 
                     ${msg.sender === 'bot' 
                       ? 'bg-blue-100 text-blue-900' 
                       : 'bg-blue-500 text-white'}
                   `}
                 >
                   {msg.text}
-                  <span className="text-xs block mt-1 opacity-60 text-right">
-                    {msg.time}
-                  </span>
                 </div>
                 
                 {msg.sender === 'bot' && (
@@ -259,6 +251,7 @@ const ChatInterface = () => {
             ))
           )}
         </div>
+
         {/* Notification */}
         {notification && (
           <div className="fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 flex items-center space-x-3 z-50">
@@ -346,7 +339,7 @@ const ChatInterface = () => {
 const SidebarItem = ({ icon, label, isOpen }) => (
   <div className="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg cursor-pointer">
     {icon}
-    {isOpen && <span className="text-sm whitespace-nowrap">{label}</span>}
+    {isOpen && <span className="text-sm">{label}</span>}
   </div>
 );
 
