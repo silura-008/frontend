@@ -19,6 +19,5 @@ function Navbar() {
     </div>
   )
 }
-// f0f8ff alice white
-// 00413d main bg
+
 export default Navbar

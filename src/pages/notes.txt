@@ -6,3 +6,14 @@ Login | Forgot passworde:
     -verify
 
 #change images
+
+
+Hero :
+    h-[100vh]  z
+
+// f0f8ff alice white
+// 00413d main bg
+// edf1d6 green/greyish white
+e3ffcc
+link 00897b
+d9d9d9d nuetral grey 
