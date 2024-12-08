@@ -5,6 +5,11 @@ Register page :
 Login | Forgot passworde:
     -verify
 
+chat :
+    -backend 
+    -need to work on ui
+    -little optional tweak on feedback mechanism
+
 #change images
 
 

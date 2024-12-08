@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  MessageSquare, 
+  MessageSquare,
+  User, 
   LayoutDashboard, 
   LogOut, 
   ThumbsUp, 
@@ -17,7 +18,7 @@ const ChatInterface = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
-  const [feedbackModal, setFeedbackModal] = useState(null);
+  const [feedback, setfeedback] = useState(null);
   const [notification, setNotification] = useState(null);
   const inputRef = useRef(null);
 
@@ -74,7 +75,7 @@ const ChatInterface = () => {
 
     // Open text feedback modal only if it's a new feedback
     if (currentMessage.feedback !== type) {
-      setFeedbackModal({
+      setfeedback({
         messageId,
         type,
         text: '',
@@ -84,12 +85,12 @@ const ChatInterface = () => {
   };
 
   const submitFeedback = () => {
-    if (feedbackModal) {
+    if (feedback) {
       // Simulate backend feedback submission
       console.log('Feedback Submitted:', {
-        messageId: feedbackModal.messageId,
-        type: feedbackModal.type,
-        feedbackText: feedbackModal.text
+        messageId: feedback.messageId,
+        type: feedback.type,
+        feedbackText: feedback.text
       });
 
       // Show notification
@@ -99,31 +100,38 @@ const ChatInterface = () => {
       });
 
       // Mark as submitted
-      setFeedbackModal(prev => ({ ...prev, submitted: true }));
+      setfeedback(prev => ({ ...prev, submitted: true }));
 
       // Clear notification after 3 seconds
       setTimeout(() => {
         setNotification(null);
-        setFeedbackModal(null);
+        setfeedback(null);
       }, 3000);
     }
   };
 
 
-  // Rest of the existing methods remain the same (handleFeedback, submitFeedback, etc.)
+
 
   const SidebarContent = () => (
-    <nav className="space-y-2 px-4">
-      <SidebarItem 
-        icon={<LayoutDashboard />} 
-        label="Dashboard"
-        isOpen={isSidebarOpen}
-      />
-      <SidebarItem 
-        icon={<LogOut />} 
-        label="Logout"
-        isOpen={isSidebarOpen}
-      />
+    <nav className="h-full  p-4 py-5 flex flex-col justify-between">
+      <div className='flex flex-col gap-2'>
+        <SidebarItem 
+          icon={<LayoutDashboard />} 
+          label="Dashboard"
+        />
+        <SidebarItem 
+          icon={<User />} 
+          label="Profile"
+        />
+      </div>
+      <div>
+        <SidebarItem 
+          icon={<LogOut />} 
+         label="Logout"
+        />
+      </div>
+      
     </nav>
   );
 
@@ -131,18 +139,12 @@ const ChatInterface = () => {
     <div className="flex h-screen bg-gray-100">
       {/* Desktop Sidebar */}
       <div className={`
-        ${isSidebarOpen ? 'w-64' : 'w-16'} 
+        ${isSidebarOpen ? 'w-64 ' : 'w-0 '} 
+
         bg-white border-r transition-all duration-300 
-        hidden md:block relative group
-      `}>
-        <button 
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="absolute top-4 -right-4 z-10 p-2 rounded-full bg-white shadow-md"
-        >
-          {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
-        </button>
-        
-        <SidebarContent />
+        hidden md:block relative group 
+      `}> 
+        {isSidebarOpen && <SidebarContent />}
       </div>
 
       {/* Mobile Sidebar */}
@@ -155,40 +157,34 @@ const ChatInterface = () => {
           onClick={() => setIsMobileSidebarOpen(false)}
           className="absolute top-4 right-4 p-2"
         >
-          <ChevronLeft />
+          <X />
         </button>
         <SidebarContent />
       </div>
 
       {/* Chat Area */}
       <div className="flex flex-col flex-1 relative">
-        {/* Header for larger devices */}
-        <div className="hidden md:flex bg-white p-4 items-center border-b">
-          <h1 className="text-xl font-semibold flex-1">Mental Health Chat</h1>
-          <div className="flex items-center space-x-4">
-            <button 
-              onClick={clearChat}
-              className="text-gray-600 hover:text-gray-800"
-            >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
-        </div>
-
-        {/* Mobile Header */}
-        <div className="md:hidden bg-white p-4 flex items-center border-b">
+        {/* Header */}
+        <div className=" bg-white p-4 flex items-center border-b">
           <button 
             onClick={() => setIsMobileSidebarOpen(true)}
-            className="mr-4"
+            className="mr-4 md:hidden"
           >
             <Menu />
           </button>
-          <h1 className="text-xl font-semibold flex-1">Mental Health Chat</h1>
+          <button 
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="mx-3 hidden md:block"
+        >
+          {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
+        </button>
+
+          <h1 className="text-xl font-semibold flex-1">Chat Window</h1>
           <button 
             onClick={clearChat}
             className="text-gray-600 hover:text-gray-800"
           >
-            <X className="w-6 h-6" />
+            <X className="w-6 h-6 border rounded-lg bg-green-600 "  color="white"/>
           </button>
         </div>
 
@@ -236,6 +232,7 @@ const ChatInterface = () => {
                           ${msg.feedback === 'up' 
                             ? 'text-green-600' : 'text-gray-500'}
                         `} 
+                        // color="green" 
                       />
                     </button>
                     <button 
@@ -251,6 +248,7 @@ const ChatInterface = () => {
                           ${msg.feedback === 'down' 
                             ? 'text-red-600' : 'text-gray-500'}
                         `} 
+                        // color="red"
                       />
                     </button>
                   </div>
@@ -268,25 +266,25 @@ const ChatInterface = () => {
         )}
 
         {/* Feedback Modal */}
-        {feedbackModal && (
+        {feedback && (
           <div 
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            onClick={() => !feedbackModal.submitted && setFeedbackModal(null)}
+            onClick={() => !feedback.submitted && setfeedback(null)}
           >
             <div 
               className="bg-white p-6 rounded-lg w-96"
               onClick={(e) => e.stopPropagation()}
             >
-              {!feedbackModal.submitted ? (
+              {!feedback.submitted ? (
                 <>
                   <h2 className="text-xl font-semibold mb-4">
-                    {feedbackModal.type === 'up' ? 'Positive' : 'Negative'} Feedback
+                    {feedback.type === 'up' ? 'Positive' : 'Negative'} Feedback
                   </h2>
                   <textarea 
                     className="w-full h-32 p-2 border rounded-lg mb-4"
                     placeholder="Optional: Share more details about your feedback..."
-                    value={feedbackModal.text}
-                    onChange={(e) => setFeedbackModal(prev => ({
+                    value={feedback.text}
+                    onChange={(e) => setfeedback(prev => ({
                       ...prev, 
                       text: e.target.value
                     }))}
@@ -294,7 +292,7 @@ const ChatInterface = () => {
                   <div className="flex justify-end space-x-2">
                     <button 
                       className="px-4 py-2 bg-gray-200 rounded-lg"
-                      onClick={() => setFeedbackModal(null)}
+                      onClick={() => setfeedback(null)}
                     >
                       Cancel
                     </button>
@@ -343,10 +341,10 @@ const ChatInterface = () => {
 };
 
 // Sidebar Item Component
-const SidebarItem = ({ icon, label, isOpen }) => (
+const SidebarItem = ({ icon, label}) => (
   <div className="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg cursor-pointer">
     {icon}
-    {isOpen && <span className="text-sm whitespace-nowrap">{label}</span>}
+    {<span className="text-sm">{label}</span>}
   </div>
 );
 

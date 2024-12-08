@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  MessageSquare, 
+  MessageSquare,
+  User, 
   LayoutDashboard, 
   LogOut, 
   ThumbsUp, 
@@ -113,15 +114,24 @@ const ChatInterface = () => {
 
 
   const SidebarContent = () => (
-    <nav className="space-y-2 px-4">
-      <SidebarItem 
-        icon={<LayoutDashboard />} 
-        label="Dashboard"
-      />
-      <SidebarItem 
-        icon={<LogOut />} 
-        label="Logout"
-      />
+    <nav className="h-full  p-4 py-5 flex flex-col justify-between">
+      <div className='flex flex-col gap-2'>
+        <SidebarItem 
+          icon={<LayoutDashboard />} 
+          label="Dashboard"
+        />
+        <SidebarItem 
+          icon={<User />} 
+          label="Profile"
+        />
+      </div>
+      <div>
+        <SidebarItem 
+          icon={<LogOut />} 
+         label="Logout"
+        />
+      </div>
+      
     </nav>
   );
 
@@ -222,6 +232,7 @@ const ChatInterface = () => {
                           ${msg.feedback === 'up' 
                             ? 'text-green-600' : 'text-gray-500'}
                         `} 
+                        // color="green" 
                       />
                     </button>
                     <button 
@@ -237,6 +248,7 @@ const ChatInterface = () => {
                           ${msg.feedback === 'down' 
                             ? 'text-red-600' : 'text-gray-500'}
                         `} 
+                        // color="red"
                       />
                     </button>
                   </div>
