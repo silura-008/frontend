@@ -12,6 +12,8 @@ import {
   Check,
   X
 } from 'lucide-react';
+import SidebarItem from '../components/SidebarItem';
+import SidebarContent from '../components/SidebarContent';
 
 const ChatInterface = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -113,27 +115,7 @@ const ChatInterface = () => {
 
 
 
-  const SidebarContent = () => (
-    <nav className="h-full  p-4 py-5 flex flex-col justify-between">
-      <div className='flex flex-col gap-2'>
-        <SidebarItem 
-          icon={<LayoutDashboard />} 
-          label="Dashboard"
-        />
-        <SidebarItem 
-          icon={<User />} 
-          label="Profile"
-        />
-      </div>
-      <div>
-        <SidebarItem 
-          icon={<LogOut />} 
-         label="Logout"
-        />
-      </div>
-      
-    </nav>
-  );
+
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -340,12 +322,5 @@ const ChatInterface = () => {
   );
 };
 
-// Sidebar Item Component
-const SidebarItem = ({ icon, label}) => (
-  <div className="flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg cursor-pointer">
-    {icon}
-    {<span className="text-sm">{label}</span>}
-  </div>
-);
 
 export default ChatInterface;
