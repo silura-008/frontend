@@ -12,11 +12,11 @@ import {
   Check,
   X
 } from 'lucide-react';
-import SidebarItem from '../components/SidebarItem';
+
 import SidebarContent from '../components/SidebarContent';
 
 const ChatInterface = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');

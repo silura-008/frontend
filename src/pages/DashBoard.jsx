@@ -8,7 +8,7 @@ import {
 import SidebarContent from '../components/SidebarContent';
 
 const DashBoard = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
  
   return (
