@@ -1,9 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { 
-  MessageSquare,
-  User, 
-  LayoutDashboard, 
-  LogOut, 
   ThumbsUp, 
   ThumbsDown, 
   ChevronLeft, 
@@ -126,7 +122,7 @@ const ChatInterface = () => {
         bg-white border-r transition-all duration-300 
         hidden md:block relative group 
       `}> 
-        {isSidebarOpen && <SidebarContent />}
+        {isSidebarOpen && <SidebarContent current='Chat' />}
       </div>
 
       {/* Mobile Sidebar */}
@@ -141,7 +137,7 @@ const ChatInterface = () => {
         >
           <X />
         </button>
-        <SidebarContent />
+        <SidebarContent current='Chat'/>
       </div>
 
       {/* Chat Area */}

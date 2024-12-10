@@ -169,7 +169,7 @@ const ProfilePage = () => {
         bg-white border-r transition-all duration-300 
         hidden md:block relative group 
       `}> 
-        {isSidebarOpen && <SidebarContent />}
+        {isSidebarOpen && <SidebarContent current='Profile' />}
       </div>
 
       {/* Mobile Sidebar */}
@@ -184,7 +184,7 @@ const ProfilePage = () => {
         >
           <X />
         </button>
-        <SidebarContent />
+        <SidebarContent current='Profile'/>
       </div>
 
       {/* Profile Page */}

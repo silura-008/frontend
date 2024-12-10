@@ -20,7 +20,7 @@ const DashBoard = () => {
         bg-white border-r transition-all duration-300 
         hidden md:block relative group 
       `}> 
-        {isSidebarOpen && <SidebarContent />}
+        {isSidebarOpen && <SidebarContent current='Dashboard' />}
       </div>
 
       {/* Mobile Sidebar */}
@@ -35,7 +35,7 @@ const DashBoard = () => {
         >
           <X />
         </button>
-        <SidebarContent />
+        <SidebarContent current='Dashboard' />
       </div>
 
       {/* DashBoard Page */}
