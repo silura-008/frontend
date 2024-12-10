@@ -53,9 +53,18 @@ const ProfilePage = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   
   // Profile states
-  const [profile, setProfile] = useState(null);
+  const [profile, setProfile] = useState({
+    userName: '',
+    avatar: '/api/placeholder/200/200',
+    email: '',
+    preferences: {
+      story: true,
+      video: false,
+      articles: true,
+      books: false,
+    }
+  });
   const [editedProfile, setEditedProfile] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Edit mode state
@@ -66,14 +75,11 @@ const ProfilePage = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        setIsLoading(true);
         const profileData = await mockApiService.fetchProfile();
         setProfile(profileData);
         setEditedProfile({...profileData});
       } catch (err) {
         setError('Failed to load profile');
-      } finally {
-        setIsLoading(false);
       }
     };
 
@@ -83,7 +89,7 @@ const ProfilePage = () => {
   // Avatar Change Handler
   const handleAvatarChange = (event) => {
     const file = event.target.files[0];
-    if (file) {
+    if (file && file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onloadend = () => {
         setEditedProfile(prev => ({
@@ -92,8 +98,11 @@ const ProfilePage = () => {
         }));
       };
       reader.readAsDataURL(file);
+    } else {
+      alert("Please upload a valid image file.");
     }
   };
+  
 
   // Preference Toggle Handler
   const togglePreference = (key) => {
@@ -139,15 +148,7 @@ const ProfilePage = () => {
     setIsEditMode(false);
   };
 
-  // Loading and Error States
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-gray-100">
-        <RefreshCw className="animate-spin text-blue-500" size={48} />
-      </div>
-    );
-  }
-
+  // Error State
   if (error) {
     return (
       <div className="flex items-center justify-center h-screen bg-red-50 text-red-600">
@@ -208,11 +209,11 @@ const ProfilePage = () => {
         </div>
 
         {/* Profile Section */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 ">
+        <div className={`flex-1 overflow-y-auto p-6 space-y-6 `}>
           {/* Avatar and Name Section */}
           <div className="bg-white shadow rounded-lg p-6 space-y-4">
             {/* Avatar */}
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center ">
               <div className="relative mb-4">
                 <img 
                   src={isEditMode ? editedProfile.avatar : profile.avatar} 
