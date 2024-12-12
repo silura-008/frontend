@@ -1,96 +1,284 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Heart, MessageCircle, TrendingUp, Shield } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  Menu,
+  X,
+  Smile, 
+  Frown, 
+  Meh, 
+  Check,
+  Calendar,
+  BarChart2,
+  Clipboard,
+  Award
+} from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { format, subDays } from 'date-fns';
 
-const LandingPage = () => {
-  const navigate = useNavigate();
+// Mock Backend Service
+const mockBackendService = {
+  // Fetch Daily Tasks
+  fetchDailyTasks: async () => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve([
+          { id: 1, task: 'Take a 30-minute walk', completed: false },
+          { id: 2, task: 'Meditate for 10 minutes', completed: false },
+          { id: 3, task: 'Call a friend', completed: false },
+          { id: 4, task: 'Water a plant', completed: false }
+        ]);
+      }, 500);
+    });
+  },
 
-  const features = [
-    {
-      icon: <Heart className="h-6 w-6 text-red-500" />,
-      title: "Emotional Support",
-      description: "Get 24/7 support and understanding from our AI-powered wellness assistant"
-    },
-    {
-      icon: <MessageCircle className="h-6 w-6 text-blue-500" />,
-      title: "Personalized Chat",
-      description: "Have meaningful conversations tailored to your emotional needs"
-    },
-    {
-      icon: <TrendingUp className="h-6 w-6 text-green-500" />,
-      title: "Mood Tracking",
-      description: "Track your emotional well-being over time with interactive charts"
-    },
-    {
-      icon: <Shield className="h-6 w-6 text-purple-500" />,
-      title: "Private & Secure",
-      description: "Your conversations and data are completely private and secure"
+  // Save Completed Tasks
+  saveCompletedTasks: async (completedTasks) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        console.log('Completed Tasks:', completedTasks);
+        resolve({ success: true, message: 'Tasks saved successfully' });
+      }, 500);
+    });
+  },
+
+  // Fetch Mood History
+  fetchMoodHistory: async () => {
+    return new Promise((resolve) => {
+      const today = new Date();
+      resolve([
+        { date: format(subDays(today, 6), 'MM/dd'), mood: 3 },
+        { date: format(subDays(today, 5), 'MM/dd'), mood: 2 },
+        { date: format(subDays(today, 4), 'MM/dd'), mood: 4 },
+        { date: format(subDays(today, 3), 'MM/dd'), mood: 3 },
+        { date: format(subDays(today, 2), 'MM/dd'), mood: 5 },
+        { date: format(subDays(today, 1), 'MM/dd'), mood: 4 },
+        { date: format(today, 'MM/dd'), mood: 3 }
+      ]);
+    });
+  }
+};
+
+const MentalHealthDashboard = () => {
+  // Sidebar states
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  // Tasks state
+  const [tasks, setTasks] = useState([]);
+  const [isTasksCompleted, setIsTasksCompleted] = useState(false);
+
+  // Mood logging state
+  const [selectedMood, setSelectedMood] = useState(null);
+  const [moodNote, setMoodNote] = useState('');
+  const [moodHistory, setMoodHistory] = useState([]);
+
+  // Loading and error states
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Fetch initial data
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        const [tasksData, moodHistoryData] = await Promise.all([
+          mockBackendService.fetchDailyTasks(),
+          mockBackendService.fetchMoodHistory()
+        ]);
+        
+        setTasks(tasksData);
+        setMoodHistory(moodHistoryData);
+      } catch (error) {
+        console.error('Failed to fetch initial data', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, []);
+
+  // Task completion handler
+  const toggleTaskCompletion = (taskId) => {
+    const updatedTasks = tasks.map(task => 
+      task.id === taskId ? { ...task, completed: !task.completed } : task
+    );
+    
+    setTasks(updatedTasks);
+    
+    // Check if all tasks are completed
+    const allCompleted = updatedTasks.every(task => task.completed);
+    if (allCompleted) {
+      setIsTasksCompleted(true);
+      mockBackendService.saveCompletedTasks(updatedTasks);
     }
+  };
+
+  // Mood selection handler
+  const handleMoodSelection = (mood) => {
+    setSelectedMood(mood);
+  };
+
+  // Reset tasks for next day
+  const resetTasks = () => {
+    setIsTasksCompleted(false);
+    mockBackendService.fetchDailyTasks().then(setTasks);
+  };
+
+  // Mood logging handler
+  const logMood = () => {
+    if (selectedMood) {
+      const newMoodEntry = {
+        date: format(new Date(), 'MM/dd'),
+        mood: selectedMood,
+        note: moodNote
+      };
+      
+      setMoodHistory(prev => [...prev, newMoodEntry]);
+      setSelectedMood(null);
+      setMoodNote('');
+    }
+  };
+
+  // Mood icons mapping
+  const moodIcons = [
+    { value: 1, icon: <Frown className="text-red-500" />, color: 'bg-red-100' },
+    { value: 2, icon: <Meh className="text-orange-500" />, color: 'bg-orange-100' },
+    { value: 3, icon: <Smile className="text-yellow-500" />, color: 'bg-yellow-100' },
+    { value: 4, icon: <Smile className="text-green-500" />, color: 'bg-green-100' },
+    { value: 5, icon: <Smile className="text-green-700" />, color: 'bg-green-200' }
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-4">
-      {/* Hero Section */}
-      <div className="text-center py-16 md:py-24">
-        <h1 className="text-4xl md:text-6xl font-bold mb-6">
-          Your Personal Mental Wellness Assistant
-        </h1>
-        <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-          Experience 24/7 emotional support, personalized coping strategies, and mood tracking
-          to improve your mental well-being.
-        </p>
-        <div className="flex gap-4 justify-center">
-          <Button
-            onClick={() => navigate('/register')}
-            className="text-lg px-8 py-6"
-          >
-            Get Started
-          </Button>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/login')}
-            className="text-lg px-8 py-6"
-          >
-            Login
-          </Button>
+    <div className="flex h-screen bg-gray-100">
+      {/* Sidebar */}
+      <div className={`
+        ${isSidebarOpen ? 'w-64' : 'w-0'} 
+        bg-white border-r transition-all duration-300 
+        hidden md:block relative overflow-hidden
+      `}>
+        <div className="p-4">
+          <h2 className="text-xl font-bold mb-4">Mental Health</h2>
+          <nav className="space-y-2">
+            <a href="#" className="flex items-center space-x-2 text-blue-600">
+              <Calendar /> <span>Dashboard</span>
+            </a>
+            <a href="#" className="flex items-center space-x-2">
+              <BarChart2 /> <span>Analytics</span>
+            </a>
+            <a href="#" className="flex items-center space-x-2">
+              <Clipboard /> <span>Tasks</span>
+            </a>
+          </nav>
         </div>
       </div>
 
-      {/* Features Section */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 py-12">
-        {features.map((feature, index) => (
-          <Card key={index} className="text-center">
-            <CardContent className="pt-6">
-              <div className="rounded-full bg-gray-50 p-3 inline-block mb-4">
-                {feature.icon}
-              </div>
-              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-              <p className="text-gray-600">{feature.description}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Main Content */}
+      <div className="flex flex-col flex-1">
+        {/* Header */}
+        <div className="bg-white p-4 flex items-center border-b">
+          <button 
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="mr-4 hidden md:block"
+          >
+            {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
+          </button>
+          <h1 className="text-xl font-semibold">Dashboard</h1>
+        </div>
 
-      {/* How It Works Section */}
-      <div className="py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-500 mb-4">1</div>
-            <h3 className="text-xl font-semibold mb-2">Sign Up</h3>
-            <p className="text-gray-600">Create your account to get started with personalized support</p>
+        {/* Dashboard Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+          {/* Mood Logging Section */}
+          <div className="bg-white p-4 rounded-lg shadow">
+            <h2 className="text-lg font-semibold mb-4">Log Your Mood</h2>
+            <div className="flex justify-between mb-4">
+              {moodIcons.map((mood) => (
+                <button
+                  key={mood.value}
+                  onClick={() => handleMoodSelection(mood.value)}
+                  className={`
+                    p-2 rounded-full transition-all 
+                    ${selectedMood === mood.value 
+                      ? `${mood.color} border-2 border-blue-500` 
+                      : 'hover:bg-gray-100'}
+                  `}
+                >
+                  {mood.icon}
+                </button>
+              ))}
+            </div>
+            {selectedMood && (
+              <div>
+                <textarea 
+                  placeholder="Optional mood note..."
+                  className="w-full border rounded p-2 mb-4"
+                  value={moodNote}
+                  onChange={(e) => setMoodNote(e.target.value)}
+                />
+                <button 
+                  onClick={logMood}
+                  className="w-full bg-blue-500 text-white py-2 rounded"
+                >
+                  Log Mood
+                </button>
+              </div>
+            )}
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-500 mb-4">2</div>
-            <h3 className="text-xl font-semibold mb-2">Track Your Mood</h3>
-            <p className="text-gray-600">Log your daily emotions and track your progress over time</p>
+
+          {/* Tasks Section */}
+          <div className="bg-white p-4 rounded-lg shadow">
+            <h2 className="text-lg font-semibold mb-4">Daily Tasks</h2>
+            {isTasksCompleted ? (
+              <div className="text-center">
+                <Award className="mx-auto text-green-500 mb-4" size={48} />
+                <h3 className="text-xl font-bold text-green-600">
+                  Congratulations!
+                </h3>
+                <p>You've completed all your tasks for today!</p>
+
+              </div>
+            ) : (
+              <div>
+                {tasks.map((task) => (
+                  <div 
+                    key={task.id} 
+                    className="flex items-center mb-2"
+                  >
+                    <input 
+                      type="checkbox"
+                      checked={task.completed}
+                      onChange={() => toggleTaskCompletion(task.id)}
+                      className="mr-2"
+                    />
+                    <span 
+                      className={`
+                        flex-1 
+                        ${task.completed ? 'line-through text-gray-400' : ''}
+                      `}
+                    >
+                      {task.task}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-500 mb-4">3</div>
-            <h3 className="text-xl font-semibold mb-2">Get Support</h3>
-            <p className="text-gray-600">Chat with our AI assistant whenever you need emotional support</p>
+
+          {/* Mood Chart Section */}
+          <div className="bg-white p-4 rounded-lg shadow">
+            <h2 className="text-lg font-semibold mb-4">Mood Trends</h2>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={moodHistory}>
+                <XAxis dataKey="date" />
+                <YAxis domain={[1, 5]} />
+                <Tooltip />
+                <Line 
+                  type="monotone" 
+                  dataKey="mood" 
+                  stroke="#8884d8" 
+                  strokeWidth={2}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
@@ -98,4 +286,4 @@ const LandingPage = () => {
   );
 };
 
-export default LandingPage;
+export default MentalHealthDashboard;
