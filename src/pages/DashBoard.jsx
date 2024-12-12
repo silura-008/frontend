@@ -4,9 +4,17 @@ import {
   ChevronRight, 
   Menu,
   X,
-  Award
+  Award,
+  Smile,
+  Angry,
+  Frown,
+  Annoyed
+
+
+
 } from 'lucide-react';
 import SidebarContent from '../components/SidebarContent';
+import { format, subDays } from 'date-fns';
 
 const DashBoard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -15,7 +23,17 @@ const DashBoard = () => {
   const [tasks, setTasks] = useState([]);
   const [moodHistory, setMoodHistory] = useState([]);
 
+  const [selectedMood, setSelectedMood] = useState(null);
+  const [moodNote, setMoodNote] = useState('');
+
   const [isTasksCompleted, setIsTasksCompleted] = useState(false);
+  const [bgMoodlog,setBgmoodlog] = useState("bg-white");
+  const moodIcons = [
+    { value: 1, icon: <Smile className="text-green-500" />, color: "bg-green-100" },
+    { value: 2, icon: <Angry className="text-red-500" />, color: 'bg-red-100' },
+    { value: 3, icon: <Frown className="text-blue-500" />, color: 'bg-blue-100' },
+    { value: 4, icon: <Annoyed className="text-orange-500" />, color: 'bg-orange-100'}
+  ];
 
   // Mock Backend Service
   const mockBackendService = {
@@ -47,26 +65,15 @@ const DashBoard = () => {
     fetchMoodHistory: async () => {
       return new Promise((resolve) => {
         const today = new Date();
-        
-        //format the date as MM/dd
-        const formatDate = (date) => {
-          const month = date.getMonth() + 1; // getMonth() returns 0-indexed months
-          const day = date.getDate();
-          return `${month < 10 ? '0' + month : month}/${day < 10 ? '0' + day : day}`;
-        };
-
-        //mood history for the last 7 days mocking
-        const moodHistory = [];
-        for (let i = 6; i >= 0; i--) {
-          const date = new Date(today);
-          date.setDate(today.getDate() - i);
-          moodHistory.push({
-            date: formatDate(date),
-            mood: Math.floor(Math.random() * 5) + 1 // Random mood value between 1 and 5
-          });
-        }
-
-        resolve(moodHistory);
+        resolve([
+          { date: format(subDays(today, 6), 'MM/dd'), mood: 3 },
+          { date: format(subDays(today, 5), 'MM/dd'), mood: 2 },
+          { date: format(subDays(today, 4), 'MM/dd'), mood: 4 },
+          { date: format(subDays(today, 3), 'MM/dd'), mood: 3 },
+          { date: format(subDays(today, 2), 'MM/dd'), mood: 1 },
+          { date: format(subDays(today, 1), 'MM/dd'), mood: 4 },
+          { date: format(today, 'MM/dd'), mood: 3 }
+        ]);
       });
     }
   };
@@ -105,6 +112,24 @@ const DashBoard = () => {
 
     fetchInitialData();
   }, []);
+
+  // Mood logging handler
+  const logMood = () => {
+    if (selectedMood) {
+      const newMoodEntry = {
+        date: format(new Date(), 'MM/dd'),
+        mood: selectedMood,
+        note: moodNote
+      };
+      
+      setMoodHistory(prev => [...prev, newMoodEntry]);
+      setSelectedMood(null);
+      setMoodNote('');
+    }
+  };
+
+  
+
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -157,9 +182,47 @@ const DashBoard = () => {
         {/* Dashboard Section */}
         <div className="grid grid-cols-1 gap-4 p-4">
           {/* mood log */}
-          <div className="bg-white p-4 rounded-lg shadow">
-              
+          <div className={` p-4 rounded-lg shadow ${bgMoodlog}`}>
+
+            <h2 className="text-lg font-semibold mb-4">How's your day ?</h2>
+            <div className="flex justify-between mb-4">
+              {moodIcons.map((mood) => (
+                <button
+                  key={mood.value}
+                  onClick={() => {
+                    setSelectedMood(mood.value);
+                    setBgmoodlog(mood.color);
+                    console.log(bgMoodlog);
+                  }}
+                  className={`
+                    p-2 rounded-full transition-all 
+                    ${selectedMood === mood.value 
+                      ? `${mood.color} ` 
+                      : 'hover:bg-gray-100'}
+                  `}
+                >
+                  {mood.icon}
+                </button>
+              ))}
+            </div>
+            {selectedMood && (
+              <div>
+                <textarea 
+                  placeholder="Optional note..."
+                  className="w-full border rounded p-2 mb-4"
+                  value={moodNote}
+                  onChange={(e) => setMoodNote(e.target.value)}
+                />
+                <button 
+                  onClick={logMood}
+                  className="w-full bg-blue-500 text-white py-2 rounded"
+                >
+                  Log Mood
+                </button>
+              </div>
+            )}
           </div>
+
           {/* Tasks Section */}
           <div className="bg-white p-4 rounded-lg shadow">
             <h2 className="text-lg font-semibold mb-4">Daily Tasks</h2>
