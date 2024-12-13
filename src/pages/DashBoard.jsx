@@ -29,10 +29,10 @@ const DashBoard = () => {
   const [isTasksCompleted, setIsTasksCompleted] = useState(false);
   const [bgMoodlog,setBgmoodlog] = useState("bg-white");
   const moodIcons = [
-    { value: 1, icon: <Smile className="text-green-500" />, bgcolor: "bg-green-200", color: "bg-green-100" },
-    { value: 2, icon: <Angry className="text-red-500" />, bgcolor: 'bg-red-200', color: "bg-red-100" },
-    { value: 3, icon: <Frown className="text-blue-500" />, bgcolor: 'bg-blue-200', color: "bg-blue-100" },
-    { value: 4, icon: <Annoyed className="text-orange-500" />, bgcolor: 'bg-orange-200', color: "bg-orange-100"}
+    { value: 1, name: "happy" , icon: <Smile className="text-green-500" />, bgcolor: "bg-green-200", color: "bg-green-100" },
+    { value: 2, name: "angry" , icon: <Angry className="text-red-500" />, bgcolor: 'bg-red-200', color: "bg-red-100" },
+    { value: 3, name: "sad" , icon: <Frown className="text-blue-500" />, bgcolor: 'bg-blue-200', color: "bg-blue-100" },
+    { value: 4, name: "anxious" , icon: <Annoyed className="text-orange-500" />, bgcolor: 'bg-orange-200', color: "bg-orange-100"}
   ];
 
   // Mock Backend Service
@@ -66,13 +66,12 @@ const DashBoard = () => {
       return new Promise((resolve) => {
         const today = new Date();
         resolve([
-          { date: format(subDays(today, 6), 'MM/dd'), mood: 3 },
-          { date: format(subDays(today, 5), 'MM/dd'), mood: 2 },
-          { date: format(subDays(today, 4), 'MM/dd'), mood: 4 },
-          { date: format(subDays(today, 3), 'MM/dd'), mood: 3 },
-          { date: format(subDays(today, 2), 'MM/dd'), mood: 1 },
-          { date: format(subDays(today, 1), 'MM/dd'), mood: 4 },
-          { date: format(today, 'MM/dd'), mood: 3 }
+          { date: format(subDays(today, 6), 'MM/dd'), mood: 3 , note : "notes" },
+          { date: format(subDays(today, 5), 'MM/dd'), mood: 2 , note : "notes" },
+          { date: format(subDays(today, 4), 'MM/dd'), mood: 4 , note : "notes" },
+          { date: format(subDays(today, 3), 'MM/dd'), mood: 3 , note : "notes" },
+          { date: format(subDays(today, 2), 'MM/dd'), mood: 1 , note : "notes" },
+          { date: format(subDays(today, 1), 'MM/dd'), mood: 4 , note : "notes" }
         ]);
       });
     }
@@ -121,12 +120,22 @@ const DashBoard = () => {
         mood: selectedMood,
         note: moodNote
       };
-      
-      setMoodHistory(prev => [...prev, newMoodEntry]);
+  
+      const existingEntryIndex = moodHistory.findIndex(entry => entry.date === newMoodEntry.date);
+  
+      if (existingEntryIndex !== -1) {
+        const updatedMoodHistory = [...moodHistory];
+        updatedMoodHistory[existingEntryIndex] = newMoodEntry;
+        setMoodHistory(updatedMoodHistory);
+      } else {
+        setMoodHistory(prev => [...prev, newMoodEntry]);
+      }
+  
       setSelectedMood(null);
       setMoodNote('');
     }
   };
+  
 
   
 
@@ -221,7 +230,23 @@ const DashBoard = () => {
                 </button>
               </div>
             )}
+          <div className='pt-3'>
+              {
+                moodHistory.map((day, index)=>{
+                  return(
+                    
+                    <div className={`flex justify-between ${moodIcons[day.mood - 1].bgcolor} p-2 border rounded-md my-2 text-sm shadow-sm `}>
+                      <p>{day.date}</p>
+                      <p>{moodIcons[day.mood - 1].name}</p>
+                      <p >{day.note}</p>
+                    </div>
+                    
+                  )
+                })
+              }
+          </div>  
           </div>
+          
 
           {/* Tasks Section */}
           <div className="bg-white p-4 rounded-lg shadow">

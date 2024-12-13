@@ -20,6 +20,11 @@ profile:
 Hero :
     h-[100vh]  z
 
+dashboard :
+    -showing the mood history , addition once a day. 
+    - incoporate task done aswell
+
+
 // f0f8ff alice white
 // 00413d main bg
 // edf1d6 green/greyish white
