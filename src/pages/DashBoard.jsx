@@ -29,10 +29,10 @@ const DashBoard = () => {
   const [isTasksCompleted, setIsTasksCompleted] = useState(false);
   const [bgMoodlog,setBgmoodlog] = useState("bg-white");
   const moodIcons = [
-    { value: 1, icon: <Smile className="text-green-500" />, color: "bg-green-100" },
-    { value: 2, icon: <Angry className="text-red-500" />, color: 'bg-red-100' },
-    { value: 3, icon: <Frown className="text-blue-500" />, color: 'bg-blue-100' },
-    { value: 4, icon: <Annoyed className="text-orange-500" />, color: 'bg-orange-100'}
+    { value: 1, icon: <Smile className="text-green-500" />, bgcolor: "bg-green-200", color: "bg-green-100" },
+    { value: 2, icon: <Angry className="text-red-500" />, bgcolor: 'bg-red-200', color: "bg-red-100" },
+    { value: 3, icon: <Frown className="text-blue-500" />, bgcolor: 'bg-blue-200', color: "bg-blue-100" },
+    { value: 4, icon: <Annoyed className="text-orange-500" />, bgcolor: 'bg-orange-200', color: "bg-orange-100"}
   ];
 
   // Mock Backend Service
@@ -197,7 +197,7 @@ const DashBoard = () => {
                   className={`
                     p-2 rounded-full transition-all 
                     ${selectedMood === mood.value 
-                      ? `${mood.color} ` 
+                      ? `${mood.bgcolor} ` 
                       : 'hover:bg-gray-100'}
                   `}
                 >
