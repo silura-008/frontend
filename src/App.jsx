@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { BrowserRouter as Router,Route ,Routes } from 'react-router-dom'
+import PrivateRoutes from './utilities/PrivateRoutes'
 
 import LandingPage from  './pages/LandingPage.jsx'
 import Login from  './pages/Login.jsx'
@@ -18,10 +19,12 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<DashBoard />} />
-          <Route path="/chat" element={<ChatInterface />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path='/forgot' element={<ForgotPassword />} />
+
+          <Route element={<PrivateRoutes/>} >
+            <Route path="/dashboard" element={<DashBoard />} />
+            <Route path="/chat" element={<ChatInterface />} />
+            <Route path="/profile" element={<ProfilePage />} />
+          </Route>
         </Routes>
       </Router>
     </>
