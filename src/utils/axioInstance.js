@@ -28,10 +28,7 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
-
-    // If the error status is 401 and there is no originalRequest._retry flag,
-    // it means the token has expired and we need to refresh it
+    //handling refresh
     if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
@@ -45,6 +42,7 @@ axiosInstance.interceptors.response.use(
         localStorage.setItem('access_token', access);
 
         // Retry the original request with the new token
+
         originalRequest.headers['Authorization'] = `Bearer ${access}`;
         return axios(originalRequest);
       } catch (error) {
@@ -61,23 +59,3 @@ axiosInstance.interceptors.response.use(
 );
 
 export default axiosInstance;
-
-
-
-
-
-
-// import axios from "axios";
-// import jwt_decode from "jwt-decode"
-
-// const baseURL = 'http://127.0.0.1:8000/api'
-
-// let authtokens = localStorage.getItem('authTokens') ? JSON.parse(localStorage.getItem('authTokens')) : null ;
-
-// const axiosInstance = axios.create({
-//     baseURL,
-//     headers:{Authorization: `Bearer ${authtokens?.access}`}
-// })
-
-// export default axiosInstance   
-
