@@ -1,7 +1,7 @@
 // src/contexts/AuthContext.js
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { replace, useNavigate } from 'react-router-dom';
-import axiosInstance from '.axioInstance'
+import axiosInstance from './axiosInstance';
 
 const AuthContext = createContext(null);
 
@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const accessToken = localStorage.getItem('access_token');
       if (accessToken) {
-        const response = await axiosInstance.get('/api/users/me/');
+        const response = await axiosInstance.get('/api/auth/users/me/');
         setUser(response.data);
       }
     } catch (error) {
@@ -32,7 +32,8 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await axiosInstance.post('/api/jwt/create/', {
+      
+      const response = await axiosInstance.post('/api/auth/jwt/create/',{
         email,
         password,
       });
@@ -40,8 +41,8 @@ export const AuthProvider = ({ children }) => {
       const { access, refresh } = response.data;
       localStorage.setItem('access_token', access);
       localStorage.setItem('refresh_token', refresh);
-
-      const userResponse = await axiosInstance.get('/api/users/me/');
+      
+      const userResponse = await axiosInstance.get('/api/auth/users/me/');
       setUser(userResponse.data);
       
       navigate('/chat');
@@ -56,7 +57,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (email, password) => {
     try {
-      await axiosInstance.post('/api/users/', {
+      await axiosInstance.post('/api/auth/users/', {
         email,
         password,
       });
@@ -82,7 +83,7 @@ export const AuthProvider = ({ children }) => {
   // Forgot password handling
   const resetPassword = async (email) => {
     try {
-      await axiosInstance.post('/api/users/reset_password/', {
+      await axiosInstance.post('/api/auth/users/reset_password/', {
         email,
       });
       return {
@@ -99,7 +100,7 @@ export const AuthProvider = ({ children }) => {
 
   const resetPasswordConfirm = async (uid, token, new_password) => {
     try {
-      await axiosInstance.post('/api/users/reset_password_confirm/', {
+      await axiosInstance.post('/api/auth/users/reset_password_confirm/', {
         uid,
         token,
         new_password,

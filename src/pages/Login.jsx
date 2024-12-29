@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../utils/AuthContext';
 import Login_img from '../assets/Login_img.jpg';
 
+
+
 function Login() {
-  const navigate = useNavigate();
+  const {login} = useAuth();
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: ''
   });
 
@@ -17,13 +20,15 @@ function Login() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
     // Add your login validation logic here
+    const result = await login(formData.email, formData.password);
+    if (!result.success) {
+      console.log(result.error)
+    }
     console.log(formData);
     
-    // Directly navigate to Chat page
-    navigate('/Chat');
   };
 
   return (
@@ -42,18 +47,18 @@ function Login() {
           </p>
 
           <form onSubmit={handleSubmit} className="mt-4">
-            {/* Username */}
+            {/* email */}
             <div className="mb-4">
-              <label htmlFor="username" className="block">Username:</label>
+              <label htmlFor="email" className="block">email:</label>
               <input
                 type="text"
-                id="username"
-                name="username"
-                value={formData.username}
+                id="email"
+                name="email"
+                value={formData.email}
                 onChange={handleChange}
                 className="w-full p-2 border border-gray-300 rounded mt-1"
                 required
-                placeholder="Enter your username"
+                placeholder="Enter your email"
               />
             </div>
 

@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { BrowserRouter as Router,Route ,Routes } from 'react-router-dom'
-import PrivateRoutes from './utilities/PrivateRoutes'
+import PrivateRoutes from './utils/PrivateRoutes'
+import { AuthProvider } from './utils/AuthContext'
+
 
 import LandingPage from  './pages/LandingPage.jsx'
 import Login from  './pages/Login.jsx'
@@ -14,8 +16,11 @@ import './index.css'
 function App() {
   return (
     <>
+    
       <Router>
+        <AuthProvider>
         <Routes>
+          
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -25,8 +30,11 @@ function App() {
             <Route path="/chat" element={<ChatInterface />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
+          
         </Routes>
+        </AuthProvider>
       </Router>
+      
     </>
   )
 }
