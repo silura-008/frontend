@@ -40,7 +40,11 @@ const Register = () => {
       // ${error.response.data.non_field_errors[0]}
       setNotification({
         icon: <CircleAlert className="text-red-600" />,
-        message: error.response?.data?.detail || 'password is weak or mismatch'
+        message: error.response?.data?.detail ||
+        error.response?.data?.password?.[0] ||
+        error.response?.data?.non_field_errors?.[0] ||
+        error.response?.data?.email?.[0] ||
+        'password is weak or mismatch'
       });
   
       setTimeout(() => {
