@@ -39,6 +39,7 @@ const AccountActivation = () => {
           icon: <Loader2 className="w-16 h-16 text-[#04a298] animate-spin" />,
           title: 'Verifying Your Account',
           message: 'Please wait while we activate your account...',
+          background: "bg-gray-50",
           buttonText: null
         };
 
@@ -47,6 +48,7 @@ const AccountActivation = () => {
           icon: <CheckCircle2 className="w-16 h-16 text-green-500" />,
           title: 'Account Activated!',
           message: 'Your account has been successfully verified. You can now log in to access your account.',
+          background: "bg-green-50",
           buttonText: 'Continue to Login'
         };
 
@@ -55,6 +57,7 @@ const AccountActivation = () => {
           icon: <XCircle className="w-16 h-16 text-red-500" />,
           title: 'Verification Failed',
           message: 'We couldn\'t verify your account. The link may have expired or is invalid.',
+          background: "bg-red-50",
           buttonText: null
         };
 
@@ -66,7 +69,7 @@ const AccountActivation = () => {
   const content = getContent();
 
   return (
-    <div className="min-h-screen bg-gray-50 font-comfortaa flex items-center justify-center p-6">
+    <div className={`min-h-screen  ${content.background}  font-comfortaa flex items-center justify-center p-6`}>
       <div className="w-full max-w-md">
         <div className="bg-white p-8 rounded-xl shadow-lg text-center">
           <div className="flex justify-center mb-8">

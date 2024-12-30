@@ -11,6 +11,7 @@ import DashBoard from  './pages/DashBoard.jsx'
 import ChatInterface from './pages/ChatInterface.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import ForgotPassword from './pages/ForgotPassword.jsx'
+import AccountActivation from './pages/AccountActivation'
 import './index.css'
 
 function App() {
@@ -25,6 +26,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot" element={<ForgotPassword />} />
+
+          <Route path="/activate/:uid/:token" element={<AccountActivation />} />
 
           <Route element={<PrivateRoutes/>} >
             <Route path="/dashboard" element={<DashBoard />} />
