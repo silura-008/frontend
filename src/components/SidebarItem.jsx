@@ -9,7 +9,7 @@ const SidebarItem = ({ icon, label, current = "" }) => {
   const isLogout = label == "Logout"
 
   const content = (
-    <div className={`flex items-center space-x-3 p-2 hover:bg-gray-100 rounded-lg cursor-pointer 
+    <div className={`flex items-center space-x-3 p-2 ${isLogout ? 'hover:bg-red-200' : 'hover:bg-gray-100'} rounded-lg cursor-pointer 
       ${isActive ? 'bg-gray-100' : ''}`}
       onClick={() => isLogout && logout()} >
       {icon}

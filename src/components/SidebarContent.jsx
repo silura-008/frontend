@@ -31,7 +31,7 @@ const SidebarContent = ({current = " " }) => (
       </div>
       <div>
         <SidebarItem 
-          icon={<LogOut />} 
+          icon={<LogOut className='text-red-600' />} 
          label="Logout"
         />
       </div>
