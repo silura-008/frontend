@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2 } from 'lucide-react';
-import { CircleAlert } from 'lucide-react';
+import { CircleAlert , Loader2} from 'lucide-react';
 import axiosInstance from '../utils/axiosInstance';
 
 const Register = () => {
@@ -14,6 +14,7 @@ const Register = () => {
 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [notification, setNotification] = useState(null);
+  const [status, setStatus] = useState('idle');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,6 +28,7 @@ const Register = () => {
 
   const handleSubmit = async(e) => {
     e.preventDefault();
+    setStatus('loading')
     try{
       await axiosInstance.post('/api/auth/users/', {
         email : formData.email,
@@ -35,8 +37,10 @@ const Register = () => {
       });
 
       setIsSubmitted(true)
+      setStatus('idle')
     }catch (error){
-      console.error(error.response.data);
+      setStatus('idle')
+      console.error(error.response?.data);
       // ${error.response.data.non_field_errors[0]}
       setNotification({
         icon: <CircleAlert className="text-red-600" />,
@@ -148,9 +152,15 @@ const Register = () => {
 
                 <button
                   type="submit"
-                  className="w-full py-3 px-4 bg-[#00413d] hover:bg-[#047a6d] text-white rounded-lg font-medium transition duration-200 ease-in-out transform hover:scale-[1.02]"
+                  disabled={status === 'loading'}
+                  className="w-full py-3 px-4 bg-[#00413d] hover:bg-[#047a6d] text-white rounded-lg font-medium transition duration-200 ease-in-out transform hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  Create Account
+                  {status === 'loading' ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Registering...
+                    </>
+                  ) : 'Register'}
                 </button>
               </form>
             </div>
