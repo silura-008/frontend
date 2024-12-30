@@ -30,12 +30,13 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     //handling refresh
+    const originalRequest = error.config;
     if (error.response.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
         const refreshToken = localStorage.getItem('refresh_token');
-        const response = await axios.post(`${baseURL}/auth/jwt/refresh/`, {
+        const response = await axios.post(`${baseURL}/api/auth/jwt/refresh/`, {
           refresh: refreshToken
         });
 

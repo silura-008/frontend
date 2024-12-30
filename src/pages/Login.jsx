@@ -22,7 +22,6 @@ function Login() {
 
   const handleSubmit = async(e) => {
     e.preventDefault();
-    // Add your login validation logic here
     const result = await login(formData.email, formData.password);
     if (!result.success) {
       console.log(result.error)
