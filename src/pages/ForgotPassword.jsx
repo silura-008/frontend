@@ -1,191 +1,97 @@
-import React, { useState, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import Login_img from '../assets/Login_img.jpg';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Mail, Loader2, CheckCircle2 } from 'lucide-react';
 
-function ForgotPassword() {
-  const navigate = useNavigate();
-  const [stage, setStage] = useState('email');
-  const [formData, setFormData] = useState({
-    email: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-  const [otp, setOtp] = useState(['', '', '', '']);
-  const inputRefs = useRef([]);
+const ForgotPassword = () => {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState('idle'); // idle, loading, success, error
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
-  };
-
-  const handleOtpChange = (index, value) => {
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-
-    if (value && index < 3) {
-      inputRefs.current[index + 1].focus();
-    }
-  };
-
-  const handleOtpKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !otp[index] && index > 0) {
-      inputRefs.current[index - 1].focus();
-    }
-  };
-
-  const handleEmailSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add email validation logic here
-    setStage('verify');
-  };
+    setStatus('loading');
 
-  const handleVerifyOtp = (e) => {
-    e.preventDefault();
-    const otpString = otp.join('');
-    // Add OTP verification logic here
-    if (otpString.length === 4) {
-      setStage('reset');
-    }
-  };
-
-  const handlePasswordReset = (e) => {
-    e.preventDefault();
-    // Add password validation logic
-    if (formData.newPassword === formData.confirmPassword) {
-      navigate('/Login');
-    } else {
-      // Handle password mismatch
-      alert("Passwords do not match");
+    try {
+      // Replace with actual API call
+      // await fetch('/auth/users/reset_password/', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ email })
+      // });
+      
+      // Mock API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setStatus('success');
+    } catch (error) {
+      setStatus('error');
     }
   };
 
   return (
-    <div className="h-screen flex font-comfortaa">
-      {/* Left Section with Image */}
-      <div className="hidden lg:block lg:w-[50%]">
-        <img src={Login_img} alt="Forgot Password" className="w-full h-full" />
-      </div>
-      
-      {/* Right Section */}
-      <div className='w-full lg:w-[50%] bg-[#00413d] flex items-center justify-center'>
-        
-      <div className=' border rounded-lg p-8 lg:p-8  md:p-10 shadow-[0_0_10px_#00413d] bg-white '>
-          {stage === 'email' && (
-            <>
-              <h3 className="font-black text-2xl mb-3 text-[#00413d] md:pr-14">Forgot Password?</h3>
-              <p className='text-sm text-gray-400 mb-4'>
-                Enter your email to reset your password
+    <div className="min-h-screen bg-gray-50 font-comfortaa flex items-center justify-center p-6">
+      <div className="w-full max-w-md">
+        <div className="bg-white p-8 rounded-xl shadow-lg">
+          {status === 'success' ? (
+            <div className="text-center">
+              <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-6" />
+              <h2 className="text-2xl font-bold text-[#00413d] mb-4">Check Your Email</h2>
+              <p className="text-gray-600 mb-6">
+                We've sent password reset instructions to:
+                <span className="block font-semibold text-[#04a298] mt-2">{email}</span>
               </p>
+              <p className="text-sm text-gray-500">
+                Didn't receive the email?{' '}
+                <button 
+                  onClick={() => setStatus('idle')}
+                  className="text-[#04a298] hover:text-[#00413d] font-medium"
+                >
+                  Try again
+                </button>
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="text-center mb-8">
+                <Mail className="w-12 h-12 text-[#04a298] mx-auto mb-4" />
+                <h2 className="text-2xl font-bold text-[#00413d] mb-2">Forgot Password?</h2>
+                <p className="text-gray-600">
+                  Enter your email address below, and we'll send you instructions to reset your password.
+                </p>
+              </div>
 
-              <form onSubmit={handleEmailSubmit} className="mt-4">
-                {/* Email */}
-                <div className="mb-4">
-                  <label htmlFor="email" className="block">Email:</label>
+              <form onSubmit={handleSubmit}>
+                <div className="mb-6">
+                  <label htmlFor="email" className="block text-gray-700 mb-2 font-medium">
+                    Email Address
+                  </label>
                   <input
                     type="email"
                     id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded mt-1"
-                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#04a298] focus:border-transparent transition duration-200"
                     placeholder="Enter your email"
+                    required
                   />
                 </div>
 
-                {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full p-2 bg-[#00413d] hover:bg-[#047a6d] text-white rounded mt-1 duration-200 ease-in-out"
+                  disabled={status === 'loading'}
+                  className="w-full py-3 px-4 bg-[#00413d] hover:bg-[#047a6d] text-white rounded-lg font-medium transition duration-200 ease-in-out transform hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  Send OTP
+                  {status === 'loading' ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Sending...
+                    </>
+                  ) : 'Reset Password'}
                 </button>
-              </form>
-            </>
-          )}
 
-          {stage === 'verify' && (
-            <>
-              <h2 className="font-black text-2xl mb-3 text-[#00413d] pt-1">Verify OTP</h2>
-              <p className="text-sm text-gray-500">
-                Please check <span className='block text-[#04a298] font-bold text-base hover:text-[#00413d]'>
-                  {formData.email}
-                </span> to confirm your OTP
-              </p>
-              
-              <div className="flex space-x-2 mb-6 mt-4 justify-center">
-                {otp.map((digit, index) => (
-                  <input
-                    key={index}
-                    ref={(el) => inputRefs.current[index] = el}
-                    type="text"
-                    maxLength="1"
-                    value={digit}
-                    onChange={(e) => handleOtpChange(index, e.target.value)}
-                    onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                    className="w-12 h-12 text-center text-xl border-2 border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-                  />
-                ))}
-              </div>
-              
-              <button
-                className="w-full p-2 bg-[#00413d] hover:bg-[#047a6d] text-white rounded mt-2 duration-200 ease-in-out"
-                onClick={handleVerifyOtp}
-              >
-                Verify
-              </button>
-            </>
-          )}
-
-          {stage === 'reset' && (
-            <>
-              <h3 className="font-black text-2xl mb-3 text-[#00413d] md:pr-14">Reset Password</h3>
-              <p className='text-sm text-gray-400 mb-4'>
-                Create a new password
-              </p>
-
-              <form onSubmit={handlePasswordReset} className="mt-4">
-                {/* New Password */}
-                <div className="mb-4">
-                  <label htmlFor="newPassword" className="block">New Password:</label>
-                  <input
-                    type="password"
-                    id="newPassword"
-                    name="newPassword"
-                    value={formData.newPassword}
-                    onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded mt-1"
-                    required
-                    placeholder="Enter new password"
-                  />
+                <div className="mt-6 text-center">
+                  <Link to="/login" className="text-[#04a298] hover:text-[#00413d] font-medium">
+                    Back to Login
+                  </Link>
                 </div>
-
-                {/* Confirm Password */}
-                <div className="mb-4">
-                  <label htmlFor="confirmPassword" className="block">Confirm Password:</label>
-                  <input
-                    type="password"
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    className="w-full p-2 border border-gray-300 rounded mt-1"
-                    required
-                    placeholder="Confirm new password"
-                  />
-                </div>
-
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  className="w-full p-2 bg-[#00413d] hover:bg-[#047a6d] text-white rounded mt-1 duration-200 ease-in-out"
-                >
-                  Reset Password
-                </button>
               </form>
             </>
           )}
@@ -193,6 +99,6 @@ function ForgotPassword() {
       </div>
     </div>
   );
-}
+};
 
 export default ForgotPassword;
