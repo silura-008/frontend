@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2 } from 'lucide-react';
+import { CircleAlert } from 'lucide-react';
+import axiosInstance from '../utils/axiosInstance';
+
 const Register = () => {
+
   const [formData, setFormData] = useState({
     email: '',
     password: '',
     confirmPassword: '',
   });
+
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [notification, setNotification] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -17,16 +23,32 @@ const Register = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+
+
+  const handleSubmit = async(e) => {
     e.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match");
-      return;
+    try{
+      await axiosInstance.post('/api/auth/users/', {
+        email : formData.email,
+        password : formData.password,
+        re_password : formData.confirmPassword 
+      });
+
+      setIsSubmitted(true)
+    }catch (error){
+      console.error(error.response.data);
+      // ${error.response.data.non_field_errors[0]}
+      setNotification({
+        icon: <CircleAlert className="text-red-600" />,
+        message: error.response?.data?.detail || 'password is weak or mismatch'
+      });
+  
+      setTimeout(() => {
+        setNotification(null);
+      }, 3000);
     }
-    // Mock API call - would be replaced with actual API integration
-    setTimeout(() => {
-      setIsSubmitted(true);
-    }, 1000);
+
+   
   };
 
   return (
@@ -148,6 +170,12 @@ const Register = () => {
             </div>
           )}
         </div>
+          {notification && (
+            <div className="fixed mx-6 top-8  lg:right-8  lg:m-0 bg-red-200 shadow-lg rounded-lg p-4 flex items-center space-x-3 z-50">
+              {notification.icon}
+              <span className="text-black">{notification.message}</span>
+            </div>
+          )}
       </div>
     </div>
   );

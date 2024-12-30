@@ -1,35 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { CheckCircle2, XCircle, Loader2} from 'lucide-react';
+import axiosInstance from '../utils/axiosInstance';
 
 const AccountActivation = () => {
   const { uid, token } = useParams();
   const [activationStatus, setActivationStatus] = useState('loading');
+  
+  const activate = async(uid,token) => {
+
+    try {
+        const responce =await axiosInstance.post('api/auth/users/activation/',{
+        uid,
+        token
+      });
+
+      setActivationStatus('success');
+      
+
+    }catch (error){
+      setActivationStatus('failed');
+      console.error(error.messege);
+    }
+  }
 
   useEffect(() => {
-    const verifyAccount = async () => {
-      try {
-        // Mock API call - replace with actual API integration
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Mock success/failure (random for demo) - replace with actual API response
-        const success = Math.random() > 0.5;
-        console.log(`${uid} ${token}`)
-        setActivationStatus(success ? 'success' : 'failed');
-        
-        // Actual API call would look something like this:
-        // const response = await fetch('/auth/users/activation/', {
-        //   method: 'POST',
-        //   headers: { 'Content-Type': 'application/json' },
-        //   body: JSON.stringify({ uid, token })
-        // });
-        // setActivationStatus(response.ok ? 'success' : 'failed');
-      } catch (error) {
-        setActivationStatus('failed');
-      }
-    };
-
-    verifyAccount();
+    activate(uid,token);
   }, [uid, token]);
 
   const getContent = () => {

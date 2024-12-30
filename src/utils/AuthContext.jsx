@@ -1,7 +1,7 @@
-// src/contexts/AuthContext.js
+
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { replace, useNavigate } from 'react-router-dom';
-import axiosInstance from './axiosInstance';
+import axiosAuthInstance from './axiosAuthInstance';
 
 const AuthContext = createContext(null);
 
@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const accessToken = localStorage.getItem('access_token');
       if (accessToken) {
-        const response = await axiosInstance.get('/api/auth/users/me/');
+        const response = await axiosAuthInstance.get('/api/auth/users/me/');
         setUser(response.data);
       }
     } catch (error) {
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       
-      const response = await axiosInstance.post('/api/auth/jwt/create/',{
+      const response = await axiosAuthInstance.post('/api/auth/jwt/create/',{
         email,
         password,
       });
@@ -42,10 +42,10 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('access_token', access);
       localStorage.setItem('refresh_token', refresh);
       
-      const userResponse = await axiosInstance.get('/api/auth/users/me/');
+      const userResponse = await axiosAuthInstance.get('/api/auth/users/me/');
       setUser(userResponse.data);
       
-      navigate('/chat');
+      navigate('/profile');
       return { success: true };
     } catch (error) {
       return {
@@ -55,23 +55,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (email, password) => {
-    try {
-      await axiosInstance.post('/api/auth/users/', {
-        email,
-        password,
-      });
-      return { 
-        success: true, 
-        message: 'Registration successful. Please check your email for activation.'
-      };
-    } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data || 'Registration failed'
-      };
-    }
-  };
 
   const logout = () => {
     localStorage.removeItem('access_token');
@@ -83,7 +66,7 @@ export const AuthProvider = ({ children }) => {
   // Forgot password handling
   const resetPassword = async (email) => {
     try {
-      await axiosInstance.post('/api/auth/users/reset_password/', {
+      await axiosAuthInstance.post('/api/auth/users/reset_password/', {
         email,
       });
       return {
@@ -100,7 +83,7 @@ export const AuthProvider = ({ children }) => {
 
   const resetPasswordConfirm = async (uid, token, new_password) => {
     try {
-      await axiosInstance.post('/api/auth/users/reset_password_confirm/', {
+      await axiosAuthInstance.post('/api/auth/users/reset_password_confirm/', {
         uid,
         token,
         new_password,
@@ -122,7 +105,6 @@ export const AuthProvider = ({ children }) => {
     loading,
     login,
     logout,
-    register,
     resetPassword,
     resetPasswordConfirm,
   };

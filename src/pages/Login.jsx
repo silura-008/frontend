@@ -36,7 +36,7 @@ function Login() {
         setNotification(null);
       }, 3000);
     }
-    console.log(formData);
+    
     
   };
 
