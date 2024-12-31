@@ -1,19 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext';
 // import Login_img from '../assets/Login_img.jpg';
 import Notification from '../components/Notification';
 import { CircleAlert, Loader2 } from 'lucide-react';
 
-
 function Login() {
   const [notification, setNotification] = useState(null);
   const [status, setStatus] = useState('idle');
-  const {login} = useAuth();
+
+  const {login,user} = useAuth();
+
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   });
+
+  useEffect(() => {
+   
+    user && navigate('/profile');
+  }, []);
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
