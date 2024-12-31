@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
-
+import Notification from '../components/Notification';
+import axiosInstance from '../utils/axiosInstance';
 
 export const ResetPassword = () => {
-    
+
+        const { uid, token } = useParams();
+        const [notification, setNotification] = useState(null);
+        
         const [formData, setFormData] = useState({
           new_password: '',
           re_new_password: ''
         });
-        const [status, setStatus] = useState('idle'); // idle, loading, success, error
+        const [status, setStatus] = useState('idle');
       
         const handleChange = (e) => {
           const { name, value } = e.target;
@@ -21,37 +25,29 @@ export const ResetPassword = () => {
       
         const handleSubmit = async (e) => {
           e.preventDefault();
-          if (formData.new_password !== formData.re_new_password) {
-            setStatus('error');
-            return;
-          }
-      
-          setStatus('loading');
-      
+          setStatus('loading'); 
           try {
-            // Replace with actual API call
-            // await fetch('/auth/users/reset_password_confirm/', {
-            //   method: 'POST',
-            //   headers: { 'Content-Type': 'application/json' },
-            //   body: JSON.stringify({
-            //     uid,
-            //     token,
-            //     new_password: formData.new_password,
-            //     re_new_password: formData.re_new_password
-            //   })
-            // });
-            
-            // Mock API call
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            await axiosInstance.post('/api/auth/users/reset_password_confirm/',{
+            uid,
+            token,
+            new_password: formData.new_password,
+            re_new_password: formData.re_new_password,
+          });
             setStatus('success');
           } catch (error) {
-            setStatus('error');
+            setStatus('idle');
+            setNotification({message : error.response?.data?.detail || error.response?.data?.token || "Failed to reset password. Please try again."})
+            console.log(error.response?.data)
+            // console.log(`${uid}  ${token}`)
+            setTimeout(() => {
+              setNotification(null);
+            }, 3000);
           }
         };
       
-        if (status === 'success') {
-          return (
-            <div className="min-h-screen bg-gray-50 font-comfortaa flex items-center justify-center p-6">
+      return (<> 
+        { status === 'success' ? 
+      ( <div className="min-h-screen bg-gray-50 font-comfortaa flex items-center justify-center p-6">
               <div className="w-full max-w-md">
                 <div className="bg-white p-8 rounded-xl shadow-lg text-center">
                   <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-6" />
@@ -68,10 +64,7 @@ export const ResetPassword = () => {
                 </div>
               </div>
             </div>
-          );
-        }
-      
-        return (
+      ) : (
           <div className="min-h-screen bg-gray-50 font-comfortaa flex items-center justify-center p-6">
             <div className="w-full max-w-md">
               <div className="bg-white p-8 rounded-xl shadow-lg">
@@ -127,18 +120,15 @@ export const ResetPassword = () => {
                       </>
                     ) : 'Reset Password'}
                   </button>
-      
-                  {status === 'error' && (
-                    <div className="mt-4 text-red-500 text-center flex items-center justify-center gap-2">
-                      <XCircle className="w-5 h-5" />
-                      Failed to reset password. Please try again.
-                    </div>
-                  )}
                 </form>
               </div>
+              {notification && <Notification notification={notification}/>}
             </div>
           </div>
-        );
+          )}
+          </>
+    
+      )
 }
 
 

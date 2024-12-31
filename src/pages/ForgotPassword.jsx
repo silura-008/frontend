@@ -21,9 +21,13 @@ const ForgotPassword = () => {
       console.log(response)
       setStatus('success');
     } catch (error){
-      console.log(error.respose?.data)
-      setNotification({messege : error.respose?.data?.detail || 'Something went wrong'})
+      console.log(error)
+      setNotification({message : "User with given email does not exist."})
       setStatus('idle');
+      
+      setTimeout(() => {
+        setNotification(null);
+      }, 3000);
     }
     
   };
