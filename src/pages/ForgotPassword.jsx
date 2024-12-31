@@ -1,29 +1,31 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, Loader2, CheckCircle2 } from 'lucide-react';
+import Notification from '../components/Notification';
+import axiosInstance from '../utils/axiosInstance';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
-  const [status, setStatus] = useState('idle'); // idle, loading, success, error
+  const [status, setStatus] = useState('idle');
+  const [notification, setNotification] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus('loading');
 
     try {
-      // Replace with actual API call
-      // await fetch('/auth/users/reset_password/', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email })
-      // });
+      const response = await axiosInstance.post('/api/auth/users/reset_password/',{
+        email
       
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      })
+      console.log(response)
       setStatus('success');
-    } catch (error) {
-      setStatus('error');
+    } catch (error){
+      console.log(error.respose?.data)
+      setNotification({messege : error.respose?.data?.detail || 'Something went wrong'})
+      setStatus('idle');
     }
+    
   };
 
   return (
@@ -95,6 +97,7 @@ const ForgotPassword = () => {
               </form>
             </>
           )}
+          {notification && <Notification notification={notification}/>}
         </div>
       </div>
     </div>

@@ -10,7 +10,7 @@ const AccountActivation = () => {
   const activate = async(uid,token) => {
 
     try {
-        const responce =await axiosInstance.post('api/auth/users/activation/',{
+        const responce =await axiosInstance.post('/api/auth/users/activation/',{
         uid,
         token
       });

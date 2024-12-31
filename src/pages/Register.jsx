@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2 } from 'lucide-react';
 import { CircleAlert , Loader2} from 'lucide-react';
+import Notification from '../components/Notification';
 import axiosInstance from '../utils/axiosInstance';
 
 const Register = () => {
@@ -184,12 +185,7 @@ const Register = () => {
             </div>
           )}
         </div>
-          {notification && (
-            <div className="fixed mx-6 top-8  lg:right-8  lg:m-0 bg-red-200 shadow-lg rounded-lg p-4 flex items-center space-x-3 z-50">
-              {notification.icon}
-              <span className="text-black">{notification.message}</span>
-            </div>
-          )}
+          {notification && <Notification notification={notification}/>}
       </div>
     </div>
   );

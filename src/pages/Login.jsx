@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext';
 // import Login_img from '../assets/Login_img.jpg';
+import Notification from '../components/Notification';
 import { CircleAlert, Loader2 } from 'lucide-react';
+
 
 function Login() {
   const [notification, setNotification] = useState(null);
@@ -100,7 +102,7 @@ function Login() {
 
               <div className="flex justify-end">
                 <Link 
-                  to="/forgot-password" 
+                  to="/forgot" 
                   className="text-[#04a298] hover:text-[#00413d] font-medium text-sm"
                 >
                   Forgot Password?
@@ -124,12 +126,7 @@ function Login() {
         </div>
 
         {/* Notification */}
-        {notification && (
-            <div className="fixed mx-6 top-8  lg:right-8  lg:m-0 bg-red-200 shadow-lg rounded-lg p-4 flex items-center space-x-3 z-50">
-              {notification.icon}
-              <span className="text-black">{notification.message}</span>
-            </div>
-          )}
+        {notification && <Notification notification={notification}/>}
       </div>
     </div>
   );
