@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../utils/AuthContext';
-import Login_img from '../assets/Login_img.jpg';
-import { CircleAlert } from 'lucide-react';
-
-
+// import Login_img from '../assets/Login_img.jpg';
+import { CircleAlert, Loader2 } from 'lucide-react';
 
 function Login() {
   const [notification, setNotification] = useState(null);
+  const [status, setStatus] = useState('idle');
   const {login} = useAuth();
   const [formData, setFormData] = useState({
     email: '',
@@ -24,7 +23,9 @@ function Login() {
 
   const handleSubmit = async(e) => {
     e.preventDefault();
+    setStatus('loading')
     const result = await login(formData.email, formData.password);
+    setStatus('idle')
     if (!result.success) {
       console.log(result.error)
       setNotification({
@@ -36,79 +37,99 @@ function Login() {
         setNotification(null);
       }, 3000);
     }
-    
-    
   };
 
   return (
-    <div className="h-screen flex font-comfortaa">
-      {/* Left Section with Image */}
-      <div className="hidden lg:block lg:w-[50%]">
-        <img src={Login_img} alt="Login" className="w-full h-full" />
-      </div>
-      
-      {/* Right Section */}
-      <div className='w-full lg:w-[50%] bg-[#00413d] flex items-center justify-center'>
-      <div className=' border rounded-lg p-8 lg:p-8  md:p-10 shadow-[0_0_10px_#00413d] bg-white '>
-          <h3 className="font-black text-2xl mb-3  text-[#00413d] md:pr-14">Login to Your Account</h3>
-          <p className='text-sm text-gray-400'>
-            Don't have an account? <Link to="/Register" className='text-[#04a298]'>Sign Up</Link>
-          </p>
-
-          <form onSubmit={handleSubmit} className="mt-4">
-            {/* email */}
-            <div className="mb-4">
-              <label htmlFor="email" className="block">email:</label>
-              <input
-                type="text"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded mt-1"
-                required
-                placeholder="Enter your email"
-              />
-            </div>
-
-            {/* Password */}
-            <div className="mb-4">
-              <label htmlFor="password" className="block">Password:</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded mt-1"
-                required
-                placeholder="Enter your password"
-              />
-            </div>
-
-            {/* Forgot Password */}
-            <div className="mb-4 text-right">
-              <Link to="/forgot" className='text-sm text-[#04a298] hover:text-[#00413d]'>
-                Forgot Password?
-              </Link>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="w-full p-2 bg-[#00413d] hover:bg-[#047a6d] text-white rounded mt-1 duration-200 ease-in-out"
-            >
-              Login
-            </button>
-          </form>
-        </div>
-        {/* Notification */}
-      {notification && (
-          <div className="fixed mx-6 top-8  lg:right-8  lg:m-0 bg-red-200 shadow-lg rounded-lg p-4 flex items-center space-x-3 z-50">
-            {notification.icon}
-            <span className="text-black">{notification.message}</span>
+    <div className="min-h-screen flex font-comfortaa">
+      {/* Left Section with Background Color/Pattern */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#00413d] to-[#047a6d] items-center justify-center">
+        <div className="text-white text-center px-8">
+          <h1 className="text-4xl font-bold mb-6">Welcome Back!</h1>
+          <p className="text-lg mb-8">We're excited to see you again.</p>
+          <div className="w-3/4 mx-auto opacity-80">
+            {/*illustration or decorative elements /image*/}
+            <div className="aspect-square rounded-full bg-white/10 backdrop-blur-sm" />
           </div>
-      )}
+        </div>
+      </div>
+
+      {/* Right Section */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
+        <div className="w-full max-w-md">
+          <div className="bg-white p-8 rounded-xl shadow-lg">
+            <h2 className="text-3xl font-bold text-[#00413d] mb-2">Welcome Back</h2>
+            <p className="text-gray-600 mb-8">
+              Don't have an account?{' '}
+              <Link to="/Register" className="text-[#04a298] hover:text-[#00413d] font-semibold">
+                Sign Up
+              </Link>
+            </p>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-gray-700 mb-2 font-medium" htmlFor="email">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#04a298] focus:border-transparent transition duration-200"
+                  placeholder="Enter your email"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-700 mb-2 font-medium" htmlFor="password">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#04a298] focus:border-transparent transition duration-200"
+                  placeholder="Enter your password"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end">
+                <Link 
+                  to="/forgot-password" 
+                  className="text-[#04a298] hover:text-[#00413d] font-medium text-sm"
+                >
+                  Forgot Password?
+                </Link>
+              </div>
+
+              <button
+                  type="submit"
+                  disabled={status === 'loading'}
+                  className="w-full py-3 px-4 bg-[#00413d] hover:bg-[#047a6d] text-white rounded-lg font-medium transition duration-200 ease-in-out transform hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {status === 'loading' ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Logining...
+                    </>
+                  ) : 'Login'}
+                </button>
+            </form>
+          </div>
+        </div>
+
+        {/* Notification */}
+        {notification && (
+            <div className="fixed mx-6 top-8  lg:right-8  lg:m-0 bg-red-200 shadow-lg rounded-lg p-4 flex items-center space-x-3 z-50">
+              {notification.icon}
+              <span className="text-black">{notification.message}</span>
+            </div>
+          )}
       </div>
     </div>
   );
