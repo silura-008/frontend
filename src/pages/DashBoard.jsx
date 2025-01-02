@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axiosAuthInstance from '../utils/axiosAuthInstance';
 import {  
   ChevronLeft, 
   ChevronRight, 
@@ -28,12 +29,12 @@ const DashBoard = () => {
 
   const [isTasksCompleted, setIsTasksCompleted] = useState(false);
   const [bgMoodlog,setBgmoodlog] = useState("bg-white");
-  const moodIcons = [
-    { value: 1, name: "happy" , icon: <Smile className="text-green-500" />, bgcolor: "bg-green-200", color: "bg-green-100" },
-    { value: 2, name: "angry" , icon: <Angry className="text-red-500" />, bgcolor: 'bg-red-200', color: "bg-red-100" },
-    { value: 3, name: "sad" , icon: <Frown className="text-blue-500" />, bgcolor: 'bg-blue-200', color: "bg-blue-100" },
-    { value: 4, name: "anxious" , icon: <Annoyed className="text-orange-500" />, bgcolor: 'bg-orange-200', color: "bg-orange-100"}
-  ];
+  const moodIcons = {
+    happy : { icon: <Smile className="text-green-500" />, bgcolor: "bg-green-200", color: "bg-green-100" },
+    angry : { icon: <Angry className="text-red-500" />, bgcolor: 'bg-red-200', color: "bg-red-100" },
+    sad : { icon: <Frown className="text-blue-500" />, bgcolor: 'bg-blue-200', color: "bg-blue-100" },
+    anxious : { icon: <Annoyed className="text-orange-500" />, bgcolor: 'bg-orange-200', color: "bg-orange-100"}
+  };
 
   // Mock Backend Service
   const mockBackendService = {
@@ -93,17 +94,50 @@ const DashBoard = () => {
     }
   };
 
+
+
+
+
+
+  const getMoodHistory = async () =>{
+    try{
+      let result = await axiosAuthInstance.get('/api/get_moodhistory/')
+      setMoodHistory(result.data)
+      console.log("fetched moodhistory")
+    }catch(error){
+      console.log("failed to get moodhistory")
+      console.log(error)
+    }
+  }
+
+  const addMoodLog = async (date,mood,note) =>{
+    try{
+      await axiosAuthInstance.post('/api/add_moodlog/',{
+        date,
+        mood,
+        note
+      })
+      console.log("added moodlog")
+    }catch(error){
+      console.log(error.response?.data)
+    }
+  }
+
+
+
+
+
   // Fetching initial data
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [tasksData, moodHistoryData] = await Promise.all([
+        const [tasksData] = await Promise.all([
           mockBackendService.fetchDailyTasks(),
-          mockBackendService.fetchMoodHistory()
+          // mockBackendService.fetchMoodHistory()
         ]);
         
         setTasks(tasksData);
-        setMoodHistory(moodHistoryData);
+        getMoodHistory()
       } catch (error) {
         console.error('Failed to fetch initial data', error);
       }
@@ -116,7 +150,7 @@ const DashBoard = () => {
   const logMood = () => {
     if (selectedMood) {
       const newMoodEntry = {
-        date: format(new Date(), 'MM/dd'),
+        date: format(new Date(), 'yyyy-MM-dd'),
         mood: selectedMood,
         note: moodNote
       };
@@ -128,8 +162,10 @@ const DashBoard = () => {
         updatedMoodHistory[existingEntryIndex] = newMoodEntry;
         setMoodHistory(updatedMoodHistory);
       } else {
-        setMoodHistory(prev => [...prev, newMoodEntry]);
+        setMoodHistory(prev => [newMoodEntry,...prev, ]);
       }
+      
+      addMoodLog(newMoodEntry.date,newMoodEntry.mood,newMoodEntry.note);
   
       setSelectedMood(null);
       setMoodNote('');
@@ -195,17 +231,17 @@ const DashBoard = () => {
 
             <h2 className="text-lg font-semibold mb-4">How's your day ?</h2>
             <div className="flex justify-between mb-4">
-              {moodIcons.map((mood) => (
+              {Object.entries(moodIcons).map( ([key,mood]) => (
                 <button
-                  key={mood.value}
+                  key={key}
                   onClick={() => {
-                    setSelectedMood(mood.value);
+                    setSelectedMood(key);
                     setBgmoodlog(mood.color);
                     console.log(bgMoodlog);
                   }}
                   className={`
                     p-2 rounded-full transition-all 
-                    ${selectedMood === mood.value 
+                    ${selectedMood === key 
                       ? `${mood.bgcolor} ` 
                       : 'hover:bg-gray-100'}
                   `}
@@ -214,7 +250,7 @@ const DashBoard = () => {
                 </button>
               ))}
             </div>
-            {selectedMood && (
+            {selectedMood !== null && (
               <div>
                 <textarea 
                   placeholder="Optional note..."
@@ -235,10 +271,11 @@ const DashBoard = () => {
                 moodHistory.map((day, index)=>{
                   return(
                     
-                    <div className={`flex justify-between ${moodIcons[day.mood - 1].bgcolor} p-2 border rounded-md my-2 text-sm shadow-sm `}>
+                    <div className={`flex justify-between ${moodIcons[day.mood].bgcolor} p-2 border rounded-md my-2 text-sm shadow-sm `}>
                       <p>{day.date}</p>
-                      <p>{moodIcons[day.mood - 1].name}</p>
+                      <p>{day.mood}</p>
                       <p >{day.note}</p>
+                      <p >{day.task_rate}</p>
                     </div>
                     
                   )
