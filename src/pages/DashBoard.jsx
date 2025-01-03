@@ -21,13 +21,13 @@ const DashBoard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   
-  const [tasks, setTasks] = useState([]);
-  const [moodHistory, setMoodHistory] = useState([]);
+  const [tasks, setTasks] = useState({});
+  const [isTasksCompleted, setIsTasksCompleted] = useState(false);
 
+  const [moodHistory, setMoodHistory] = useState([]);
   const [selectedMood, setSelectedMood] = useState(null);
   const [moodNote, setMoodNote] = useState('');
 
-  const [isTasksCompleted, setIsTasksCompleted] = useState(false);
   const [bgMoodlog,setBgmoodlog] = useState("bg-white");
   const moodIcons = {
     happy : { icon: <Smile className="text-green-500" />, bgcolor: "bg-green-200", color: "bg-green-100" },
@@ -36,68 +36,51 @@ const DashBoard = () => {
     anxious : { icon: <Annoyed className="text-orange-500" />, bgcolor: 'bg-orange-200', color: "bg-orange-100"}
   };
 
-  // Mock Backend Service
-  const mockBackendService = {
-    // Fetch Daily Tasks
-    fetchDailyTasks: async () => {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve([
-            { id: 1, task: 'Take a 30-minute walk', completed: false },
-            { id: 2, task: 'Meditate for 10 minutes', completed: false },
-            { id: 3, task: 'Call a friend', completed: false },
-            { id: 4, task: 'Water a plant', completed: false }
-          ]);
-        }, 500);
-      });
-    },
 
-    // Save Completed Tasks
-    saveCompletedTasks: async (completedTasks) => {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          console.log('Completed Tasks:', completedTasks);
-          resolve({ success: true, message: 'Tasks saved successfully' });
-        }, 500);
-      });
-    },
-
-    // Fetch Mood History 
-    fetchMoodHistory: async () => {
-      return new Promise((resolve) => {
-        const today = new Date();
-        resolve([
-          { date: format(subDays(today, 6), 'MM/dd'), mood: 3 , note : "notes" },
-          { date: format(subDays(today, 5), 'MM/dd'), mood: 2 , note : "notes" },
-          { date: format(subDays(today, 4), 'MM/dd'), mood: 4 , note : "notes" },
-          { date: format(subDays(today, 3), 'MM/dd'), mood: 3 , note : "notes" },
-          { date: format(subDays(today, 2), 'MM/dd'), mood: 1 , note : "notes" },
-          { date: format(subDays(today, 1), 'MM/dd'), mood: 4 , note : "notes" }
-        ]);
-      });
-    }
-  };
 
   // Task completion handler
-  const toggleTaskCompletion = (taskId) => {
-    const updatedTasks = tasks.map(task => 
-      task.id === taskId ? { ...task, completed: !task.completed } : task
-    );
+  const checkTasksCompletion = (taskList) => {
+    const allCompleted = Object.values(taskList).every(completed => completed);
+    setIsTasksCompleted(allCompleted);
+  };
+
+  const toggleTaskCompletion = (taskName) => {
+
+    const toggle = !tasks[taskName] 
+    tasks[taskName] = !tasks[taskName]
+    updateTasks(tasks);
     
-    setTasks(updatedTasks);
     
-    // Check if all tasks are completed
-    const allCompleted = updatedTasks.every(task => task.completed);
-    if (allCompleted) {
-      setIsTasksCompleted(true);
-      mockBackendService.saveCompletedTasks(updatedTasks);
+    setTasks(prevTasks =>({
+      ...prevTasks,
+      [taskName] : toggle
+    }))
+
+    // tasks[taskName] = !tasks[taskName]
+    // setTasks(tasks)
+    // updateTasks(tasks);
+    checkTasksCompletion(tasks)
+  };
+
+  const getTasks = async () => {
+    try {
+      let response = await axiosAuthInstance.get('/api/get_tasks/');
+      setTasks(response.data.tasks);
+      checkTasksCompletion(response.data.tasks);
+    } catch (error) {
+      console.error('Failed to fetch tasks:', error);
     }
   };
 
-
-
-
-
+  const updateTasks = async (tasks) => {
+    try {
+      await axiosAuthInstance.put('/api/update_tasks/', {
+        tasks,
+      });
+    } catch (error) {
+      console.error('Failed to update task:', error);
+    }
+  };
 
   const getMoodHistory = async () =>{
     try{
@@ -108,7 +91,7 @@ const DashBoard = () => {
       console.log("failed to get moodhistory")
       console.log(error)
     }
-  }
+  };
 
   const addMoodLog = async (date,mood,note) =>{
     try{
@@ -121,32 +104,8 @@ const DashBoard = () => {
     }catch(error){
       console.log(error.response?.data)
     }
-  }
-
-
-
-
-
-  // Fetching initial data
-  useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        const [tasksData] = await Promise.all([
-          mockBackendService.fetchDailyTasks(),
-          // mockBackendService.fetchMoodHistory()
-        ]);
-        
-        setTasks(tasksData);
-        getMoodHistory()
-      } catch (error) {
-        console.error('Failed to fetch initial data', error);
-      }
-    };
-
-    fetchInitialData();
-  }, []);
-
-  // Mood logging handler
+  };
+  
   const logMood = () => {
     if (selectedMood) {
       const newMoodEntry = {
@@ -164,13 +123,23 @@ const DashBoard = () => {
       } else {
         setMoodHistory(prev => [newMoodEntry,...prev, ]);
       }
-      
+
       addMoodLog(newMoodEntry.date,newMoodEntry.mood,newMoodEntry.note);
   
       setSelectedMood(null);
       setMoodNote('');
     }
   };
+
+
+
+
+  // Fetching initial data
+  useEffect(() => {
+    getTasks();
+    getMoodHistory()
+  }, []);
+
   
 
   
@@ -298,24 +267,24 @@ const DashBoard = () => {
               </div>
             ) : (
               <div>
-                {tasks.map((task) => (
+                {Object.entries(tasks).map( ([taskName, completed]) => (
                   <div 
-                    key={task.id} 
+                    key={`${taskName}`} 
                     className="flex items-center mb-2"
                   >
                     <input 
                       type="checkbox"
-                      checked={task.completed}
-                      onChange={() => toggleTaskCompletion(task.id)}
+                      checked={completed}
+                      onChange={() => toggleTaskCompletion(taskName)}
                       className="mr-2"
                     />
                     <span 
                       className={`
                         flex-1 
-                        ${task.completed ? 'line-through text-gray-400' : ''}
+                        ${completed ? 'line-through text-gray-400' : ''}
                       `}
                     >
-                      {task.task}
+                      {taskName}
                     </span>
                   </div>
                 ))}
