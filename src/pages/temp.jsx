@@ -1,169 +1,128 @@
-import React, { useState, useEffect } from 'react';
-import axiosAuthInstance from '../utils/axiosAuthInstance';
-import {  
+import React, { useState, useRef, useEffect } from 'react';
+import { 
+  ThumbsUp, 
+  ThumbsDown, 
   ChevronLeft, 
   ChevronRight, 
   Menu,
-  X,
-  Award,
-  Smile,
-  Angry,
-  Frown,
-  Annoyed,
-  Activity
+  Check,
+  X
 } from 'lucide-react';
-import { 
-  PieChart, 
-  Pie, 
-  Cell,
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend,
-  ResponsiveContainer,
-  BarChart,
-  Bar
-} from 'recharts';
-import SidebarContent from '../components/SidebarContent';
-import { format } from 'date-fns';
 
-const DashBoard = () => {
+import SidebarContent from '../components/SidebarContent';
+
+const ChatInterface = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [tasks, setTasks] = useState({});
-  const [moodHistory, setMoodHistory] = useState([]);
-  const [selectedMood, setSelectedMood] = useState(null);
-  const [moodNote, setMoodNote] = useState('');
-  const [isTasksCompleted, setIsTasksCompleted] = useState(false);
-  const [bgMoodlog, setBgmoodlog] = useState("bg-white");
-  const [moodRatios, setMoodRatios] = useState(null);
-  const [totalMoodEntries, setTotalMoodEntries] = useState(0);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [feedback, setfeedback] = useState(null);
+  const [notification, setNotification] = useState(null);
+  const inputRef = useRef(null);
 
-  const moodIcons = {
-    happy: { value: 1, icon: <Smile className="text-green-500" />, bgcolor: "bg-green-200", color: "bg-green-100" },
-    angry: { value: 2, icon: <Angry className="text-red-500" />, bgcolor: 'bg-red-200', color: "bg-red-100" },
-    sad: { value: 3, icon: <Frown className="text-blue-500" />, bgcolor: 'bg-blue-200', color: "bg-blue-100" },
-    anxious: { value: 4, icon: <Annoyed className="text-orange-500" />, bgcolor: 'bg-orange-200', color: "bg-orange-100"}
-  };
-
-  const getTasks = async () => {
-    try {
-      const response = await axiosAuthInstance.get('/api/get_tasks');
-      setTasks(response.data.tasks);
-      checkTasksCompletion(response.data.tasks);
-    } catch (error) {
-      console.error('Failed to fetch tasks:', error);
-    }
-  };
-
-  const updateTask = async (taskName, completed) => {
-    try {
-      await axiosAuthInstance.post('/api/update_task', {
-        task: taskName,
-        completed
-      });
-      getTasks(); // Refresh tasks after update
-    } catch (error) {
-      console.error('Failed to update task:', error);
-    }
-  };
-
-  const getMoodRatios = async () => {
-    try {
-      const response = await axiosAuthInstance.get('/api/get_ratio');
-      setMoodRatios({
-        happy_ratio: response.data.happy_ratio,
-        sad_ratio: response.data.sad_ratio,
-        angry_ratio: response.data.angry_ratio,
-        anxious_ratio: response.data.anxious_ratio
-      });
-      setTotalMoodEntries(response.data.count);
-    } catch (error) {
-      console.error('Failed to fetch mood ratios:', error);
-    }
-  };
-
-  const checkTasksCompletion = (taskList) => {
-    const allCompleted = Object.values(taskList).every(completed => completed);
-    setIsTasksCompleted(allCompleted);
-  };
-
-  const toggleTaskCompletion = (taskName) => {
-    const isCompleted = tasks[taskName];
-    updateTask(taskName, !isCompleted);
-  };
-
-  const getMoodHistory = async () => {
-    try {
-      const result = await axiosAuthInstance.get('/api/get_moodhistory/');
-      setMoodHistory(result.data);
-    } catch (error) {
-      console.error("Failed to get mood history:", error);
-    }
-  };
-
-  const addMoodLog = async (date, mood, note) => {
-    try {
-      await axiosAuthInstance.post('/api/add_moodlog/', {
-        date,
-        mood,
-        note
-      });
-      getMoodHistory();
-      getMoodRatios();
-    } catch (error) {
-      console.error("Failed to add mood log:", error);
-    }
-  };
-
-  useEffect(() => {
-    getTasks();
-    getMoodHistory();
-    getMoodRatios();
-  }, []);
-
-  const logMood = () => {
-    if (selectedMood) {
-      const newMoodEntry = {
-        date: format(new Date(), 'MM/dd'),
-        mood: selectedMood,
-        note: moodNote
+  const sendMessage = () => {
+    if (newMessage.trim()) {
+      const newMsg = {
+        id: messages.length + 1,
+        sender: 'user',
+        text: newMessage,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
-      addMoodLog(newMoodEntry.date, newMoodEntry.mood, newMoodEntry.note);
-      setSelectedMood(null);
-      setMoodNote('');
+      setMessages(prevMessages => [...prevMessages, newMsg]);
+      setNewMessage('');
+      
+      // Simulate bot response (replace this with actual backend logic)
+      setTimeout(() => {
+        const botResponse = {
+          id: messages.length + 2,
+          sender: 'bot',
+          text: 'Thank you for sharing. Would you like to talk more about what\'s on your mind?',
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          feedback: null
+        };
+        setMessages(prev => [...prev, botResponse]);
+      }, 1000);
     }
   };
 
-  // Prepare data for mood trend line chart
-  const moodTrendData = moodHistory.map(entry => ({
-    date: entry.date,
-    mood: entry.mood,
-  }));
+  // Clear chat functionality
+  const clearChat = () => {
+    setMessages([]);
+    setNotification({
+      icon: <Check className="text-green-500" />,
+      message: 'Chat cleared successfully'
+    });
 
-  // Prepare data for mood distribution pie chart
-  const preparePieChartData = () => {
-    if (!moodRatios) return [];
-    return [
-      { name: 'Happy', value: moodRatios.happy_ratio, color: '#22c55e' },
-      { name: 'Sad', value: moodRatios.sad_ratio, color: '#3b82f6' },
-      { name: 'Angry', value: moodRatios.angry_ratio, color: '#ef4444' },
-      { name: 'Anxious', value: moodRatios.anxious_ratio, color: '#f97316' }
-    ];
+    // Clear notification after 3 seconds
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
   };
+  const handleFeedback = (messageId, type) => {
+    // If feedback is already set to the same type, do nothing
+    const currentMessage = messages.find(msg => msg.id === messageId);
+    if (currentMessage.feedback === type) return;
+
+    setMessages(prevMessages => 
+      prevMessages.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, feedback: msg.feedback === type ? null : type }
+          : msg
+      )
+    );
+
+    // Open text feedback modal only if it's a new feedback
+    if (currentMessage.feedback !== type) {
+      setfeedback({
+        messageId,
+        type,
+        text: '',
+        submitted: false
+      });
+    }
+  };
+
+  const submitFeedback = () => {
+    if (feedback) {
+      // Simulate backend feedback submission
+      console.log('Feedback Submitted:', {
+        messageId: feedback.messageId,
+        type: feedback.type,
+        feedbackText: feedback.text
+      });
+
+      // Show notification
+      setNotification({
+        icon: <Check className="text-green-500" />,
+        message: 'Feedback submitted successfully'
+      });
+
+      // Mark as submitted
+      setfeedback(prev => ({ ...prev, submitted: true }));
+
+      // Clear notification after 3 seconds
+      setTimeout(() => {
+        setNotification(null);
+        setfeedback(null);
+      }, 3000);
+    }
+  };
+
+
+
+
+
 
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Desktop Sidebar */}
       <div className={`
-        ${isSidebarOpen ? 'w-64' : 'w-0'} 
+        ${isSidebarOpen ? 'w-64 ' : 'w-0 '} 
+
         bg-white border-r transition-all duration-300 
         hidden md:block relative group 
       `}> 
-        {isSidebarOpen && <SidebarContent current='Dashboard' />}
+        {isSidebarOpen && <SidebarContent current='Chat' />}
       </div>
 
       {/* Mobile Sidebar */}
@@ -178,13 +137,13 @@ const DashBoard = () => {
         >
           <X />
         </button>
-        <SidebarContent current='Dashboard' />
+        <SidebarContent current='Chat'/>
       </div>
 
-      {/* Dashboard Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Chat Area */}
+      <div className="flex flex-col flex-1 relative">
         {/* Header */}
-        <div className="bg-white p-4 flex items-center border-b">
+        <div className=" bg-white p-4 flex items-center border-b">
           <button 
             onClick={() => setIsMobileSidebarOpen(true)}
             className="mr-4 md:hidden"
@@ -192,171 +151,172 @@ const DashBoard = () => {
             <Menu />
           </button>
           <button 
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="mx-3 hidden md:block"
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="mx-3 hidden md:block"
+        >
+          {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
+        </button>
+
+          <h1 className="text-xl font-semibold flex-1">Chat Window</h1>
+          <button 
+            onClick={clearChat}
+            className="text-gray-600 hover:text-gray-800"
           >
-            {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
+            <X className="w-6 h-6 border rounded-lg bg-green-600 "  color="white"/>
           </button>
-          <h1 className="text-xl font-semibold flex-1">Dashboard</h1>
-          {totalMoodEntries > 0 && (
-            <div className="flex items-center text-sm text-gray-600">
-              <Activity className="w-4 h-4 mr-1" />
-              {totalMoodEntries} mood entries
-            </div>
-          )}
         </div>
 
-        {/* Main Content */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Mood Log Section */}
-            <div className={`${bgMoodlog} p-4 rounded-lg shadow-lg`}>
-              <h2 className="text-lg font-semibold mb-4">How's your day?</h2>
-              <div className="flex justify-between mb-4">
-                {Object.entries(moodIcons).map(([key, mood]) => (
-                  <button
-                    key={key}
-                    onClick={() => {
-                      setSelectedMood(mood.value);
-                      setBgmoodlog(mood.color);
-                    }}
-                    className={`
-                      p-2 rounded-full transition-all 
-                      ${selectedMood === mood.value ? mood.bgcolor : 'hover:bg-gray-100'}
-                    `}
-                  >
-                    {mood.icon}
-                  </button>
-                ))}
-              </div>
-              {selectedMood && (
-                <div>
-                  <textarea 
-                    placeholder="Optional note..."
-                    className="w-full border rounded p-2 mb-4"
-                    value={moodNote}
-                    onChange={(e) => setMoodNote(e.target.value)}
-                  />
-                  <button 
-                    onClick={logMood}
-                    className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition-colors"
-                  >
-                    Log Mood
-                  </button>
-                </div>
-              )}
-              <div className="mt-4 max-h-40 overflow-y-auto">
-                {moodHistory.map((day, index) => (
-                  <div key={index} className={`flex justify-between ${moodIcons[day.mood]?.bgcolor || 'bg-gray-100'} p-2 rounded-md my-2 text-sm shadow-sm`}>
-                    <span>{day.date}</span>
-                    <span className="truncate mx-2">{day.note}</span>
-                  </div>
-                ))}
-              </div>
+        {/* Chat Messages */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {messages.length === 0 ? (
+            <div className="flex items-center justify-center h-full text-gray-500">
+              What's on your mind?
             </div>
-
-            {/* Tasks Section */}
-            <div className="bg-white p-4 rounded-lg shadow-lg">
-              <h2 className="text-lg font-semibold mb-4">Daily Tasks</h2>
-              {isTasksCompleted ? (
-                <div className="text-center py-8">
-                  <Award className="mx-auto text-green-500 mb-4" size={48} />
-                  <h3 className="text-xl font-bold text-green-600">
-                    Congratulations!
-                  </h3>
-                  <p>You've completed all your tasks for today!</p>
+          ) : (
+            messages.map((msg) => (
+              <div 
+                key={msg.id}
+                className={`
+                  flex flex-col items-start space-y-1
+                  ${msg.sender === 'bot' ? 'items-start' : 'items-end'}
+                `}
+              >
+                <div 
+                  className={`
+                    max-w-[70%] p-3 rounded-lg relative
+                    ${msg.sender === 'bot' 
+                      ? 'bg-blue-100 text-blue-900' 
+                      : 'bg-blue-500 text-white'}
+                  `}
+                >
+                  {msg.text}
+                  <span className="text-xs block mt-1 opacity-60 text-right">
+                    {msg.time}
+                  </span>
                 </div>
-              ) : (
-                <div className="space-y-2">
-                  {Object.entries(tasks).map(([taskName, completed]) => (
-                    <div 
-                      key={taskName} 
-                      className="flex items-center p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                
+                {msg.sender === 'bot' && (
+                  <div className="flex space-x-2">
+                    <button 
+                      onClick={() => handleFeedback(msg.id, 'up')}
+                      className={`
+                        p-1 rounded-full hover:bg-green-100
+                        ${msg.feedback === 'up' ? 'bg-green-200' : ''}
+                      `}
                     >
-                      <input 
-                        type="checkbox"
-                        checked={completed}
-                        onChange={() => toggleTaskCompletion(taskName)}
-                        className="mr-3 h-4 w-4 text-blue-500"
+                      <ThumbsUp 
+                        className={`
+                          w-5 h-5 
+                          ${msg.feedback === 'up' 
+                            ? 'text-green-600' : 'text-gray-500'}
+                        `} 
+                        // color="green" 
                       />
-                      <span className={completed ? 'line-through text-gray-400' : ''}>
-                        {taskName}
-                      </span>
-                    </div>
-                  ))}
+                    </button>
+                    <button 
+                      onClick={() => handleFeedback(msg.id, 'down')}
+                      className={`
+                        p-1 rounded-full hover:bg-red-100
+                        ${msg.feedback === 'down' ? 'bg-red-200' : ''}
+                      `}
+                    >
+                      <ThumbsDown 
+                        className={`
+                          w-5 h-5 
+                          ${msg.feedback === 'down' 
+                            ? 'text-red-600' : 'text-gray-500'}
+                        `} 
+                        // color="red"
+                      />
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+        {/* Notification */}
+        {notification && (
+          <div className="fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 flex items-center space-x-3 z-50">
+            {notification.icon}
+            <span className="text-gray-800">{notification.message}</span>
+          </div>
+        )}
+
+        {/* Feedback Modal */}
+        {feedback && (
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            onClick={() => !feedback.submitted && setfeedback(null)}
+          >
+            <div 
+              className="bg-white p-6 rounded-lg w-96"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {!feedback.submitted ? (
+                <>
+                  <h2 className="text-xl font-semibold mb-4">
+                    {feedback.type === 'up' ? 'Positive' : 'Negative'} Feedback
+                  </h2>
+                  <textarea 
+                    className="w-full h-32 p-2 border rounded-lg mb-4"
+                    placeholder="Optional: Share more details about your feedback..."
+                    value={feedback.text}
+                    onChange={(e) => setfeedback(prev => ({
+                      ...prev, 
+                      text: e.target.value
+                    }))}
+                  />
+                  <div className="flex justify-end space-x-2">
+                    <button 
+                      className="px-4 py-2 bg-gray-200 rounded-lg"
+                      onClick={() => setfeedback(null)}
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      className="px-4 py-2 bg-blue-500 text-white rounded-lg"
+                      onClick={submitFeedback}
+                    >
+                      Submit
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center space-y-4">
+                  <Check className="w-16 h-16 text-green-500" />
+                  <p className="text-xl font-semibold">Thank You!</p>
+                  <p className="text-gray-600 text-center">
+                    Your feedback has been received and will help improve our service.
+                  </p>
                 </div>
               )}
-            </div>
-
-            {/* Charts Section */}
-            <div className="lg:col-span-3 md:col-span-2 bg-white p-4 rounded-lg shadow-lg">
-              <h2 className="text-lg font-semibold mb-4">Mood Analytics</h2>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Mood Distribution Pie Chart */}
-                <div className="h-64">
-                  <h3 className="text-sm font-medium mb-2">Mood Distribution</h3>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={preparePieChartData()}
-                        dataKey="value"
-                        nameKey="name"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        label
-                      >
-                        {preparePieChartData().map((entry, index) => (
-                          <Cell key={index} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-
-                {/* Mood Trend Line Chart */}
-                <div className="h-64">
-                  <h3 className="text-sm font-medium mb-2">Mood Trends</h3>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={moodTrendData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" />
-                      <YAxis domain={[0, 5]} />
-                      <Tooltip />
-                      <Legend />
-                      <Line 
-                        type="monotone" 
-                        dataKey="mood" 
-                        stroke="#8884d8" 
-                        activeDot={{ r: 8 }}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-
-                {/* Mood Count Bar Chart */}
-                <div className="h-64 lg:col-span-2">
-                  <h3 className="text-sm font-medium mb-2">Mood Frequency</h3>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={preparePieChartData()}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="value" fill="#8884d8" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
             </div>
           </div>
+        )}
+
+        {/* Message Input */}
+        <div className="bg-white p-4 border-t flex items-center space-x-2">
+          <input 
+            ref={inputRef}
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type your message..."
+            className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
+            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+          />
+          <button 
+            onClick={sendMessage}
+            className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600"
+          >
+            Send
+          </button>
         </div>
       </div>
     </div>
   );
 };
 
-export default DashBoard;
+
+export default ChatInterface;
