@@ -16,18 +16,27 @@ const count = 1000; // Total entries (count)
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]; // Original color palette
 
-// Custom Tooltip Component
-const CustomTooltip = ({ active, payload }) => {
+const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
-    return (
-      <div className="bg-green-50 border border-green-500 rounded-md p-2 shadow">
-        <p className="text-green-700 font-medium">{`${payload[0].name}: ${payload[0].value}%`}</p>
-        <p className="text-green-700">Total Entries: {count}</p> {/* Displaying total count */}
-      </div>
-    );
+    if (payload[0].payload) {
+      return (
+        <div className="bg-green-50 border border-green-500 rounded-md p-2 shadow">
+          <p className="text-green-700 font-medium">{`${payload[0].payload.name}: ${payload[0].payload.value}%`}</p>
+          <p className="text-green-700">Total Entries: {count}</p> {/* Displaying total count */}
+        </div>
+      );
+    } else {
+      return (
+        <div className="bg-green-50 border border-green-500 rounded-md p-2 shadow">
+          <p className="text-green-700 font-medium">{`${payload[0].name}: ${payload[0].value}%`}</p>
+          <p className="text-green-700">Total Entries: {count}</p> {/* Displaying total count */}
+        </div>
+      );
+    }
   }
   return null;
 };
+
 
 const Demo = () => {
   return (
