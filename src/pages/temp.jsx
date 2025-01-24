@@ -1,322 +1,133 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { 
-  ThumbsUp, 
-  ThumbsDown, 
-  ChevronLeft, 
-  ChevronRight, 
-  Menu,
-  Check,
-  X
-} from 'lucide-react';
+import React from "react";
+import { PieChart, Pie, Cell, Tooltip, Legend, AreaChart, Area, XAxis, YAxis, CartesianGrid, BarChart, Bar,
+  RadialBarChart,
+  RadialBar,
+  PolarAngleAxis,
+}  from "recharts";
 
-import SidebarContent from '../components/SidebarContent';
+const moodRatios = [
+  { name: "Happy", value: 50 },
+  { name: "Sad", value: 10 },
+  { name: "Angry", value: 20 },
+  { name: "Anxious", value: 20 },
+];
 
-const ChatInterface = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [feedback, setfeedback] = useState(null);
-  const [notification, setNotification] = useState(null);
-  const inputRef = useRef(null);
+const count = 1000; // Total entries (count)
 
-  const sendMessage = () => {
-    if (newMessage.trim()) {
-      const newMsg = {
-        id: messages.length + 1,
-        sender: 'user',
-        text: newMessage,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setMessages(prevMessages => [...prevMessages, newMsg]);
-      setNewMessage('');
-      
-      // Simulate bot response (replace this with actual backend logic)
-      setTimeout(() => {
-        const botResponse = {
-          id: messages.length + 2,
-          sender: 'bot',
-          text: 'Thank you for sharing. Would you like to talk more about what\'s on your mind?',
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          feedback: null
-        };
-        setMessages(prev => [...prev, botResponse]);
-      }, 1000);
-    }
-  };
+const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042"]; // Original color palette
 
-  // Clear chat functionality
-  const clearChat = () => {
-    setMessages([]);
-    setNotification({
-      icon: <Check className="text-green-500" />,
-      message: 'Chat cleared successfully'
-    });
-
-    // Clear notification after 3 seconds
-    setTimeout(() => {
-      setNotification(null);
-    }, 3000);
-  };
-  const handleFeedback = (messageId, type) => {
-    // If feedback is already set to the same type, do nothing
-    const currentMessage = messages.find(msg => msg.id === messageId);
-    if (currentMessage.feedback === type) return;
-
-    setMessages(prevMessages => 
-      prevMessages.map(msg => 
-        msg.id === messageId 
-          ? { ...msg, feedback: msg.feedback === type ? null : type }
-          : msg
-      )
+// Custom Tooltip Component
+const CustomTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-green-50 border border-green-500 rounded-md p-2 shadow">
+        <p className="text-green-700 font-medium">{`${payload[0].name}: ${payload[0].value}%`}</p>
+        <p className="text-green-700">Total Entries: {count}</p> {/* Displaying total count */}
+      </div>
     );
+  }
+  return null;
+};
 
-    // Open text feedback modal only if it's a new feedback
-    if (currentMessage.feedback !== type) {
-      setfeedback({
-        messageId,
-        type,
-        text: '',
-        submitted: false
-      });
-    }
-  };
-
-  const submitFeedback = () => {
-    if (feedback) {
-      // Simulate backend feedback submission
-      console.log('Feedback Submitted:', {
-        messageId: feedback.messageId,
-        type: feedback.type,
-        feedbackText: feedback.text
-      });
-
-      // Show notification
-      setNotification({
-        icon: <Check className="text-green-500" />,
-        message: 'Feedback submitted successfully'
-      });
-
-      // Mark as submitted
-      setfeedback(prev => ({ ...prev, submitted: true }));
-
-      // Clear notification after 3 seconds
-      setTimeout(() => {
-        setNotification(null);
-        setfeedback(null);
-      }, 3000);
-    }
-  };
-
-
-
-
-
-
+const Demo = () => {
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Desktop Sidebar */}
-      <div className={`
-        ${isSidebarOpen ? 'w-64 ' : 'w-0 '} 
-
-        bg-white border-r transition-all duration-300 
-        hidden md:block relative group 
-      `}> 
-        {isSidebarOpen && <SidebarContent current='Chat' />}
-      </div>
-
-      {/* Mobile Sidebar */}
-      <div className={`
-        md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg 
-        transform transition-transform duration-300
-        ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
-        <button 
-          onClick={() => setIsMobileSidebarOpen(false)}
-          className="absolute top-4 right-4 p-2"
+    <div className="flex flex-col justify-center items-center h-auto bg-white py-6 space-y-6 md:space-y-10 md:grid md:grid-cols-2 md:gap-8 md:px-6">
+      <PieChart width={400} height={400}>
+        <Pie
+          data={moodRatios}
+          dataKey="value"
+          nameKey="name"
+          cx="50%"
+          cy="50%"
+          outerRadius={150}
+          label
         >
-          <X />
-        </button>
-        <SidebarContent current='Chat'/>
-      </div>
+          {moodRatios.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Pie>
+        <Tooltip content={<CustomTooltip />} />
+        <Legend
+          layout="horizontal"
+          verticalAlign="bottom"
+          align="center"
+          wrapperStyle={{ color: "#008000" }} // Green legend text
+        />
+      </PieChart>
 
-      {/* Chat Area */}
-      <div className="flex flex-col flex-1 relative">
-        {/* Header */}
-        <div className=" bg-white p-4 flex items-center border-b">
-          <button 
-            onClick={() => setIsMobileSidebarOpen(true)}
-            className="mr-4 md:hidden"
-          >
-            <Menu />
-          </button>
-          <button 
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="mx-3 hidden md:block"
-        >
-          {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
-        </button>
+      <AreaChart
+        width={600}
+        height={300}
+        data={moodRatios}
+        margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip />
+        <Area stackId="a" type="monotone" dataKey="value" stroke="#8884d8" fill="#8884d8" />
+        <Area stackId="a" type="monotone" dataKey="value" stroke="#00C49F" fill="#00C49F" />
+        <Area stackId="a" type="monotone" dataKey="value" stroke="#FFBB28" fill="#FFBB28" />
+        <Area stackId="a" type="monotone" dataKey="value" stroke="#FF8042" fill="#FF8042" />
+        <text x="50%" y="20" textAnchor="middle" fontSize="16" fill="#333">{`Total Mood Logs: ${count}`}</text> {/* Total count in Area chart */}
+      </AreaChart>
+      
+      <BarChart width={600} height={300} data={moodRatios}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis type="number" domain={[0, 100]} />
+        <Tooltip content={<CustomTooltip />} />
+        <Bar dataKey="value">
+          {moodRatios.map((entry, index) => (
+            <Cell key={`bar-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Bar>
+      </BarChart>
 
-          <h1 className="text-xl font-semibold flex-1">Chat Window</h1>
-          <button 
-            onClick={clearChat}
-            className="text-gray-600 hover:text-gray-800"
-          >
-            <X className="w-6 h-6 border rounded-lg bg-green-600 "  color="white"/>
-          </button>
-        </div>
 
-        {/* Chat Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.length === 0 ? (
-            <div className="flex items-center justify-center h-full text-gray-500">
-              What's on your mind?
-            </div>
-          ) : (
-            messages.map((msg) => (
-              <div 
-                key={msg.id}
-                className={`
-                  flex flex-col items-start space-y-1
-                  ${msg.sender === 'bot' ? 'items-start' : 'items-end'}
-                `}
-              >
-                <div 
-                  className={`
-                    max-w-[70%] p-3 rounded-lg relative
-                    ${msg.sender === 'bot' 
-                      ? 'bg-blue-100 text-blue-900' 
-                      : 'bg-blue-500 text-white'}
-                  `}
-                >
-                  {msg.text}
-                  <span className="text-xs block mt-1 opacity-60 text-right">
-                    {msg.time}
-                  </span>
-                </div>
-                
-                {msg.sender === 'bot' && (
-                  <div className="flex space-x-2">
-                    <button 
-                      onClick={() => handleFeedback(msg.id, 'up')}
-                      className={`
-                        p-1 rounded-full hover:bg-green-100
-                        ${msg.feedback === 'up' ? 'bg-green-200' : ''}
-                      `}
-                    >
-                      <ThumbsUp 
-                        className={`
-                          w-5 h-5 
-                          ${msg.feedback === 'up' 
-                            ? 'text-green-600' : 'text-gray-500'}
-                        `} 
-                        // color="green" 
-                      />
-                    </button>
-                    <button 
-                      onClick={() => handleFeedback(msg.id, 'down')}
-                      className={`
-                        p-1 rounded-full hover:bg-red-100
-                        ${msg.feedback === 'down' ? 'bg-red-200' : ''}
-                      `}
-                    >
-                      <ThumbsDown 
-                        className={`
-                          w-5 h-5 
-                          ${msg.feedback === 'down' 
-                            ? 'text-red-600' : 'text-gray-500'}
-                        `} 
-                        // color="red"
-                      />
-                    </button>
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-        </div>
-        {/* Notification */}
-        {notification && (
-          <div className="fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 flex items-center space-x-3 z-50">
-            {notification.icon}
-            <span className="text-gray-800">{notification.message}</span>
-          </div>
-        )}
+      <RadialBarChart
+  width={500}
+  height={400}
+  cx="50%"
+  cy="50%"
+  innerRadius="20%"
+  outerRadius="90%"
+  barSize={15}
+  data={moodRatios}
+  startAngle={90} // Start the chart at 90 degrees
+  endAngle={-270} // Rotate clockwise to prevent overlap
+>
+  <PolarAngleAxis
+    type="number"
+    domain={[0, 100]}
+    angleAxisId={0}
+    tickFormatter={(tick) => (tick === 100 ? '' : `${tick}%`)} // Remove 100% label, keep others
+  />
+  <RadialBar
+    background
+    clockWise
+    dataKey="value"
+    fillOpacity={0.8}
+  >
+    {moodRatios.map((entry, index) => (
+      <Cell key={`radial-cell-${index}`} fill={COLORS[index % COLORS.length]} />
+    ))}
+  </RadialBar>
+  <Tooltip content={<CustomTooltip />} />
+  <Legend
+    iconSize={10}
+    layout="horizontal"
+    verticalAlign="bottom"
+    align="center"
+    wrapperStyle={{ color: "#333" }}
+  />
+</RadialBarChart>
 
-        {/* Feedback Modal */}
-        {feedback && (
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-            onClick={() => !feedback.submitted && setfeedback(null)}
-          >
-            <div 
-              className="bg-white p-6 rounded-lg w-96"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {!feedback.submitted ? (
-                <>
-                  <h2 className="text-xl font-semibold mb-4">
-                    {feedback.type === 'up' ? 'Positive' : 'Negative'} Feedback
-                  </h2>
-                  <textarea 
-                    className="w-full h-32 p-2 border rounded-lg mb-4"
-                    placeholder="Optional: Share more details about your feedback..."
-                    value={feedback.text}
-                    onChange={(e) => setfeedback(prev => ({
-                      ...prev, 
-                      text: e.target.value
-                    }))}
-                  />
-                  <div className="flex justify-end space-x-2">
-                    <button 
-                      className="px-4 py-2 bg-gray-200 rounded-lg"
-                      onClick={() => setfeedback(null)}
-                    >
-                      Cancel
-                    </button>
-                    <button 
-                      className="px-4 py-2 bg-blue-500 text-white rounded-lg"
-                      onClick={submitFeedback}
-                    >
-                      Submit
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center space-y-4">
-                  <Check className="w-16 h-16 text-green-500" />
-                  <p className="text-xl font-semibold">Thank You!</p>
-                  <p className="text-gray-600 text-center">
-                    Your feedback has been received and will help improve our service.
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
 
-        {/* Message Input */}
-        <div className="bg-white p-4 border-t flex items-center space-x-2">
-          <input 
-            ref={inputRef}
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type your message..."
-            className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
-            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-          />
-          <button 
-            onClick={sendMessage}
-            className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600"
-          >
-            Send
-          </button>
-        </div>
-      </div>
+
+
     </div>
   );
 };
 
-
-export default ChatInterface;
+export default Demo;

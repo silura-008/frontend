@@ -1,5 +1,9 @@
 import React from "react";
-import { PieChart, Pie, Cell, Tooltip, Legend, AreaChart, Area, XAxis, YAxis, CartesianGrid } from "recharts";
+import { PieChart, Pie, Cell, Tooltip, Legend, AreaChart, Area, XAxis, YAxis, CartesianGrid, BarChart, Bar,
+  RadialBarChart,
+  RadialBar,
+  PolarAngleAxis,
+}  from "recharts";
 
 const moodRatios = [
   { name: "Happy", value: 50 },
@@ -27,7 +31,7 @@ const CustomTooltip = ({ active, payload }) => {
 
 const Demo = () => {
   return (
-    <div className="flex flex-col justify-center items-center h-screen bg-white space-y-10">
+    <div className="flex flex-col justify-center items-center h-auto bg-white py-6 space-y-6 md:space-y-10 md:grid md:grid-cols-2 md:gap-8 md:px-6">
       <PieChart width={400} height={400}>
         <Pie
           data={moodRatios}
@@ -67,6 +71,61 @@ const Demo = () => {
         <Area stackId="a" type="monotone" dataKey="value" stroke="#FF8042" fill="#FF8042" />
         <text x="50%" y="20" textAnchor="middle" fontSize="16" fill="#333">{`Total Mood Logs: ${count}`}</text> {/* Total count in Area chart */}
       </AreaChart>
+      
+      <BarChart width={600} height={300} data={moodRatios}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis type="number" domain={[0, 100]} />
+        <Tooltip content={<CustomTooltip />} />
+        <Bar dataKey="value">
+          {moodRatios.map((entry, index) => (
+            <Cell key={`bar-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Bar>
+      </BarChart>
+
+
+      <RadialBarChart
+  width={500}
+  height={400}
+  cx="50%"
+  cy="50%"
+  innerRadius="20%"
+  outerRadius="90%"
+  barSize={15}
+  data={moodRatios}
+  startAngle={90} // Start the chart at 90 degrees
+  endAngle={-270} // Rotate clockwise to prevent overlap
+>
+  <PolarAngleAxis
+    type="number"
+    domain={[0, 100]}
+    angleAxisId={0}
+    tickFormatter={(tick) => (tick === 100 ? '' : `${tick}%`)} // Remove 100% label, keep others
+  />
+  <RadialBar
+    background
+    clockWise
+    dataKey="value"
+    fillOpacity={0.8}
+  >
+    {moodRatios.map((entry, index) => (
+      <Cell key={`radial-cell-${index}`} fill={COLORS[index % COLORS.length]} />
+    ))}
+  </RadialBar>
+  <Tooltip content={<CustomTooltip />} />
+  <Legend
+    iconSize={10}
+    layout="horizontal"
+    verticalAlign="bottom"
+    align="center"
+    wrapperStyle={{ color: "#333" }}
+  />
+</RadialBarChart>
+
+
+
+
     </div>
   );
 };
