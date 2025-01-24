@@ -17,6 +17,8 @@ import {
 import SidebarContent from '../components/SidebarContent';
 import { format, subDays } from 'date-fns';
 
+import Charts from '../components/Charts'
+
 const DashBoard = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -291,7 +293,10 @@ const DashBoard = () => {
               </div>
             )}
           </div>
-          
+          {/* charts Section */}
+          <div>
+              <Charts />
+          </div>
         </div>
       </div>
     </div>
