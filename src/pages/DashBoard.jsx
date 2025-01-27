@@ -294,7 +294,7 @@ const DashBoard = () => {
             )}
           </div>
           {/* charts Section */}
-          <div>
+          <div className=''>
               <Charts />
           </div>
         </div>
