@@ -175,7 +175,7 @@ const DashBoard = () => {
       </div>
 
       {/* DashBoard Page */}
-      <div className="flex flex-col flex-1 relative">
+      <div className="flex flex-col flex-1 relative ">
         {/* Header */}
         <div className=" bg-white p-4 flex items-center border-b">
           <button 
@@ -196,7 +196,7 @@ const DashBoard = () => {
         </div>
 
         {/* Dashboard Section */}
-        <div className="grid grid-cols-1 gap-4 p-4">
+        <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-2 overflow-y-auto">
           {/* mood log */}
           <div className={` p-4 rounded-lg shadow ${bgMoodlog}`}>
 
@@ -278,7 +278,9 @@ const DashBoard = () => {
                       type="checkbox"
                       checked={completed}
                       onChange={() => toggleTaskCompletion(taskName)}
-                      className="mr-2"
+                      className={`
+                      accent-green-600 mr-2 cursor-pointer
+                    `}
                     />
                     <span 
                       className={`
@@ -294,7 +296,7 @@ const DashBoard = () => {
             )}
           </div>
           {/* charts Section */}
-          <div className=''>
+          <div className='col-span-2'>
               <Charts />
           </div>
         </div>

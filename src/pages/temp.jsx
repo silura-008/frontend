@@ -132,7 +132,11 @@ const Demo = () => {
   />
 </RadialBarChart>
 
-
+className={`
+                      appearance-none h-5 w-5 bg-white border-2 border-gray-300 rounded-md 
+                      checked:bg-green-500 checked:border-green-500 checked:after:content-['✔']  
+                      focus:outline-none mr-2 text-white
+                    `}
 
 
     </div>
