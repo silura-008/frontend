@@ -18,39 +18,39 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const moodRatios = [
-  { name: "Happy", value: 50 },
-  { name: "Sad", value: 10 },
-  { name: "Angry", value: 20 },
-  { name: "Anxious", value: 20 },
-];
-
-const count = 1000;
-
 const COLORS = [ "#00C49F","#0088FE","#FF8042" ,"#FFBB28" ]; 
 
-const CustomTooltip = ({ active, payload, label }) => {
-  if (active && payload && payload.length) {
-    if (payload[0].payload) {
-      return (
-        <div className="bg-green-50 border border-green-500 rounded-md p-2 shadow">
-          <p className="text-green-700 font-medium">{`${payload[0].payload.name}: ${payload[0].payload.value}%`}</p>
-          <p className="text-green-700">Total Entries: {count}</p> 
-        </div>
-      );
-    } else {
-      return (
-        <div className="bg-green-50 border border-green-500 rounded-md p-2 shadow">
-          <p className="text-green-700 font-medium">{`${payload[0].name}: ${payload[0].value}%`}</p>
-          <p className="text-green-700">Total Entries: {count}</p> 
-        </div>
-      );
+const Charts = ({chart}) => {
+  
+  const count = chart.log_count
+  const moodRatios = []
+  Object.entries(chart).forEach(([key, value]) => {
+    if (key.includes("ratio")) {
+      moodRatios.push({ name: key.replace('_ratio', ''), value });
     }
-  }
-  return null;
-};
+  });
+  
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      if (payload[0].payload) {
+        return (
+          <div className="bg-green-50 border border-green-500 rounded-md p-2 shadow">
+            <p className="text-green-700 font-medium">{`${payload[0].payload.name}: ${payload[0].payload.value}%`}</p>
+            <p className="text-green-700">Total Entries: {count}</p> 
+          </div>
+        );
+      } else {
+        return (
+          <div className="bg-green-50 border border-green-500 rounded-md p-2 shadow">
+            <p className="text-green-700 font-medium">{`${payload[0].name}: ${payload[0].value}%`}</p>
+            <p className="text-green-700">Total Entries: {count}</p> 
+          </div>
+        );
+      }
+    }
+    return null;
+  };
 
-const Charts = () => {
   return (
     <div className="h-auto grid grid-cols-1 justify-items-center place-items-center md:grid-cols-2 gap-8 bg-white pt-7 pb-10 rounded-lg shadow">
       

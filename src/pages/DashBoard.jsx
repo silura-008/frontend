@@ -38,6 +38,7 @@ const DashBoard = () => {
     anxious : { icon: <Annoyed className="text-orange-500" />, bgcolor: 'bg-orange-200', color: "bg-orange-100"}
   };
 
+  const [chart,setChart] = useState({})
 
 
   // Task completion handler
@@ -88,7 +89,6 @@ const DashBoard = () => {
     try{
       let result = await axiosAuthInstance.get('/api/get_moodhistory/')
       setMoodHistory(result.data)
-      console.log("fetched moodhistory")
     }catch(error){
       console.log("failed to get moodhistory")
       console.log(error)
@@ -133,13 +133,21 @@ const DashBoard = () => {
     }
   };
 
-
+  const getRatios = async() =>{
+    try{
+      let ratios = await axiosAuthInstance.get('/api/get_ratio/')
+      setChart(ratios.data)
+    } catch (error) {
+      console.error('Failed to fetch Ratios :', error);
+    }
+  }
 
 
   // Fetching initial data
   useEffect(() => {
     getTasks();
     getMoodHistory()
+    getRatios()
   }, []);
 
   
@@ -242,7 +250,7 @@ const DashBoard = () => {
                 moodHistory.map((day, index)=>{
                   return(
                     
-                    <div className={`flex justify-between ${moodIcons[day.mood].bgcolor} p-2 border rounded-md my-2 text-sm shadow-sm `}>
+                    <div key={day.date} className={`flex justify-between ${moodIcons[day.mood].bgcolor} p-2 border rounded-md my-2 text-sm shadow-sm `}>
                       <p>{day.date}</p>
                       <p>{day.mood}</p>
                       <p >{day.note}</p>
@@ -297,7 +305,7 @@ const DashBoard = () => {
           </div>
           {/* charts Section */}
           <div className='col-span-2'>
-              <Charts />
+              <Charts chart={chart} />
           </div>
         </div>
       </div>
