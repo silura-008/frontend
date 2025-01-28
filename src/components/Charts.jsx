@@ -63,8 +63,9 @@ const Charts = ({chart}) => {
             nameKey="name"
             cx="50%"
             cy="50%"
-            outerRadius={130}
+            outerRadius="75%"
             label
+            
           >
             {moodRatios.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

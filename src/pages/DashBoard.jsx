@@ -304,7 +304,7 @@ const DashBoard = () => {
             )}
           </div>
           {/* charts Section */}
-          <div className='col-span-2'>
+          <div className='md:col-span-2'>
               <Charts chart={chart} />
           </div>
         </div>
