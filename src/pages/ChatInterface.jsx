@@ -6,7 +6,8 @@ import {
   ChevronRight, 
   Menu,
   Check,
-  X
+  X,
+  Send,
 } from 'lucide-react';
 
 import SidebarContent from '../components/SidebarContent';
@@ -156,28 +157,30 @@ const ChatInterface = () => {
         >
           {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
         </button>
-
-          <h1 className="text-xl font-semibold flex-1">Chat Window</h1>
+          <div className='flex justify-between w-full'>
+            <h1 className="text-xl font-semibold flex-1">Chat Window</h1>
           <button 
             onClick={clearChat}
-            className="text-gray-600 hover:text-gray-800"
+            className="text-white bg-[#00413d] hover:bg-[#047a6d] p-1 px-3 border rounded-md text-xs md:mr-6 transition duration-200 ease-in-out cursor-pointer"
           >
-            <X className="w-6 h-6 border rounded-lg bg-green-600 "  color="white"/>
+            Clear
           </button>
+          </div>
+          
         </div>
 
         {/* Chat Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.length === 0 ? (
             <div className="flex items-center justify-center h-full text-gray-500">
-              What's on your mind?
+              <h1 className='text-2xl'>What's on your mind?</h1> 
             </div>
           ) : (
             messages.map((msg) => (
               <div 
                 key={msg.id}
                 className={`
-                  flex flex-col items-start space-y-1
+                  flex flex-col items-start space-y-1 md:m-6
                   ${msg.sender === 'bot' ? 'items-start' : 'items-end'}
                 `}
               >
@@ -296,21 +299,21 @@ const ChatInterface = () => {
         )}
 
         {/* Message Input */}
-        <div className="bg-white p-4 border-t flex items-center space-x-2">
+        <div className="p-4 flex items-center justify-center space-x-2  md:mb-[2rem]">
           <input 
             ref={inputRef}
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Type your message..."
-            className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300"
+            className="w-full md:w-[50%] p-3 md:p-5 border rounded-full focus:outline-none focus:ring-2 focus:ring-blue-300 "
             onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
           />
           <button 
             onClick={sendMessage}
-            className="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600"
+            className="bg-blue-500 text-white p-3 rounded-full hover:bg-blue-600 md:p-4 text-center"
           >
-            Send
+            <Send/>
           </button>
         </div>
       </div>
