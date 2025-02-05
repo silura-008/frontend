@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import axiosAuthInstance from '../utils/axiosAuthInstance';
 import { 
   ThumbsUp, 
   ThumbsDown, 
@@ -21,7 +22,18 @@ const ChatInterface = () => {
   const [notification, setNotification] = useState(null);
   const inputRef = useRef(null);
 
-  const sendMessage = () => {
+  const getConversation = async () =>{
+    try{
+      let result = await axiosAuthInstance.get('/api/get_conversation/');
+      setMessages(result.data.conversation);
+      console.log("converation fetched !");
+    } catch (error) {
+      console.error('Failed to fetch conversation :', error);
+    }
+  }
+
+  
+  const sendMessage = async() => {
     if (newMessage.trim()) {
       const newMsg = {
         id: messages.length + 1,
@@ -33,18 +45,30 @@ const ChatInterface = () => {
       setNewMessage('');
       
       // Simulate bot response (replace this with actual backend logic)
-      setTimeout(() => {
-        const botResponse = {
-          id: messages.length + 2,
-          sender: 'bot',
-          text: 'Thank you for sharing. Would you like to talk more about what\'s on your mind?',
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          feedback: null
-        };
-        setMessages(prev => [...prev, botResponse]);
-      }, 1000);
+      // setTimeout(() => {
+      //   const botResponse = {
+      //     id: messages.length + 2,
+      //     sender: 'bot',
+      //     text: 'Thank you for sharing. Would you like to talk more about what\'s on your mind?',
+      //     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      //     feedback: null
+      //   };
+      //   setMessages(prev => [...prev, botResponse]);
+      // }, 1000);
+    
+    try{
+      await axiosAuthInstance.post('/api/chat/', {
+        conversation:newMsg,
+      })
+      console.log("send messege")
+    }catch(error){
+      console.log(error);
+      return;
     }
+    getConversation();
+  }
   };
+
 
   // Clear chat functionality
   const clearChat = () => {
@@ -109,8 +133,10 @@ const ChatInterface = () => {
     }
   };
 
-
-
+  // Fetching initial data
+  // useEffect(() => {
+  //   getConversation();
+  // }, []);
 
 
 
