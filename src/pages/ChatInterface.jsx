@@ -32,6 +32,21 @@ const ChatInterface = () => {
     }
   }
 
+  const clearChat = async () =>{
+    try{
+      let response = await axiosAuthInstance.post('/api/clear_conversation/');
+      setMessages([]);
+      setNotification({
+      icon: <Check className="text-green-500" />,
+      message: 'Chat cleared successfully'
+    });
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
+    } catch (error) {
+      console.error('Failed to clear conversation :', error);
+    }
+  }
   
   const sendMessage = async() => {
     if (newMessage.trim()) {
@@ -58,7 +73,7 @@ const ChatInterface = () => {
     
     try{
       await axiosAuthInstance.post('/api/chat/', {
-        conversation:newMsg,
+        newMsg,
       })
       console.log("send messege")
     }catch(error){
@@ -70,19 +85,7 @@ const ChatInterface = () => {
   };
 
 
-  // Clear chat functionality
-  const clearChat = () => {
-    setMessages([]);
-    setNotification({
-      icon: <Check className="text-green-500" />,
-      message: 'Chat cleared successfully'
-    });
 
-    // Clear notification after 3 seconds
-    setTimeout(() => {
-      setNotification(null);
-    }, 3000);
-  };
   const handleFeedback = (messageId, type) => {
     // If feedback is already set to the same type, do nothing
     const currentMessage = messages.find(msg => msg.id === messageId);
@@ -134,9 +137,9 @@ const ChatInterface = () => {
   };
 
   // Fetching initial data
-  // useEffect(() => {
-  //   getConversation();
-  // }, []);
+  useEffect(() => {
+    getConversation();
+  }, []);
 
 
 
