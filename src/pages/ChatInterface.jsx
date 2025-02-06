@@ -174,7 +174,7 @@ const ChatInterface = () => {
       {/* Chat Area */}
       <div className="flex flex-col flex-1 relative">
         {/* Header */}
-        <div className="bg-white p-4 flex items-center border-b shadow-sm">
+        <div className={`bg-white p-4 flex items-center border-b shadow-sm ${sessionExpired && 'z-[1]'}`}>
           <button onClick={() => setIsMobileSidebarOpen(true)} className="mr-4 md:hidden">
             <Menu />
           </button>
@@ -249,20 +249,7 @@ const ChatInterface = () => {
                 ))}
               </div>
               
-              {sessionExpired && (
-                <div className="absolute inset-0 flex items-center justify-center backdrop-blur-sm bg-white/30">
-                  <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-                    <h2 className="text-xl mb-2 text-[#00413d]">Session Expired</h2>
-                    <p className="mb-4 text-gray-600">Your chat session has expired due to inactivity.</p>
-                    <button 
-                      onClick={startNewConversation}
-                      className="bg-[#00413d] text-white px-6 py-3 rounded-lg hover:bg-[#047a6d] transition duration-200"
-                    >
-                      Start New Conversation
-                    </button>
-                  </div>
-                </div>
-              )}
+              
               
               {/* {isTyping && !sessionExpired && (
                 <div className="flex items-center space-x-2 text-[#00413d] md:mx-6">
@@ -341,16 +328,30 @@ const ChatInterface = () => {
           <button 
             onClick={sendMessage}
             disabled={sessionExpired}
-            className={`p-4 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02] ${
-              sessionExpired 
-                ? 'bg-gray-300 cursor-not-allowed' 
-                : 'bg-[#00413d] hover:bg-[#047a6d] text-white'
+            className={`p-4 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02]
+               bg-[#00413d] hover:bg-[#047a6d] text-white
             }`}
           >
             <Send className="w-5 h-5" />
           </button>
         </div>
+        {sessionExpired && (
+                <div className="absolute inset-0 flex items-center justify-center backdrop-blur-sm bg-white/30">
+                  <div className="bg-white p-5 md:p-6 rounded-lg shadow-lg text-center">
+                    <h2 className="text-xl mb-2 text-[#00413d]">Session Expired</h2>
+                    <p className="mb-4 text-gray-600">Your chat session has expired due to inactivity.</p>
+                    <button 
+                      onClick={startNewConversation}
+                      className="bg-[#00413d] text-white px-6 py-3 rounded-lg hover:bg-[#047a6d] transition duration-200"
+                    >
+                      Start New Conversation
+                    </button>
+                  </div>
+                </div>
+              )}
+        
       </div>
+      
     </div>
   );
 };
