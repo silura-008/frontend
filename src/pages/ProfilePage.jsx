@@ -4,27 +4,56 @@ import {
   ChevronRight, 
   Menu,
   X,
-  Camera,
   Edit,
   Save,
-  RefreshCw,
-  AlertTriangle
+  Loader2,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import SidebarContent from '../components/SidebarContent';
-
-// Mock API Service
-const mockApiService = {
-  // Simulate fetching user profile
+import Error from '../components/Error';
+// Backend service functions
+const apiService = {
   fetchProfile: async () => {
+    // TODO: Implement actual API call
+    // return await fetch('/api/profile').then(res => res.json());
+    
+    // Mock implementation
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
-          userName: 'John Doe',
-          avatar: '/api/placeholder/200/200',
-          email: 'john.doe@example.com',
-          preferences: {
+          profile: {
+            userName: 'John Doe',
+            email: 'john.doe@example.com',
+            country: 'United States'
+          },
+          on_happy: {
             story: true,
             video: false,
+            articles: true,
+            books: false,
+          },
+          on_sad: {
+            story: false,
+            video: true,
+            articles: true,
+            books: true,
+          },
+          on_angry: {
+            story: true,
+            video: true,
+            articles: false,
+            books: false,
+          },
+          on_anxious: {
+            story: false,
+            video: false,
+            articles: true,
+            books: true,
+          },
+          on_fear: {
+            story: true,
+            video: true,
             articles: true,
             books: false,
           }
@@ -33,11 +62,17 @@ const mockApiService = {
     });
   },
 
-  // Simulate saving profile
-  saveProfile: async (profileData) => {
+  updateProfile: async (profileData) => {
+    // TODO: Implement actual API call
+    // return await fetch('/api/profile/update', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(profileData)
+    // }).then(res => res.json());
+    
+    // Mock implementation
     return new Promise((resolve) => {
       setTimeout(() => {
-        console.log('Saving profile:', profileData);
         resolve({
           success: true,
           message: 'Profile updated successfully'
@@ -47,90 +82,134 @@ const mockApiService = {
   }
 };
 
+// List of countries for autocomplete
+const countries = [
+  'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 
+  'Japan', 'India', 'Brazil', 'South Africa'
+]; // Add more countries as needed
+const DEFAULT_COUNTRY = 'United States';
+
+const MAX_LENGTH = 20;
+
 const ProfilePage = () => {
-  // Sidebar states
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   
-  // Profile states
+  // Separate state for profile and preferences
   const [profile, setProfile] = useState({
     userName: '',
-    avatar: '/api/placeholder/200/200',
     email: '',
-    preferences: {
-      story: true,
-      video: false,
-      articles: true,
-      books: false,
-    }
+    country: ''
   });
-  const [editedProfile, setEditedProfile] = useState(null);
-  const [error, setError] = useState(null);
 
-  // Edit mode state
+  const [preferences, setPreferences] = useState({
+    on_happy: {},
+    on_sad: {},
+    on_angry: {},
+    on_anxious: {},
+    on_fear: {}
+  });
+
+  const [expandedMood, setExpandedMood] = useState(null);
+  const [editedProfile, setEditedProfile] = useState(null);
+  const [editedPreferences, setEditedPreferences] = useState(null);
+  const [error, setError] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [filteredCountries, setFilteredCountries] = useState([]);
 
-  // Fetch profile on component mount
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const profileData = await mockApiService.fetchProfile();
-        setProfile(profileData);
-        setEditedProfile({...profileData});
+        const data = await apiService.fetchProfile();
+        setProfile(data.profile);
+        setEditedProfile({...data.profile});
+        
+        const { on_happy, on_sad, on_angry, on_anxious, on_fear } = data;
+        const prefs = { on_happy, on_sad, on_angry, on_anxious, on_fear };
+        setPreferences(prefs);
+        setEditedPreferences({...prefs});
       } catch (err) {
-        setError('Failed to load profile');
+        setError(true);
       }
     };
 
     fetchUserProfile();
   }, []);
 
-  // Avatar Change Handler
-  const handleAvatarChange = (event) => {
-    const file = event.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditedProfile(prev => ({
-          ...prev,
-          avatar: reader.result
-        }));
-      };
-      reader.readAsDataURL(file);
+  const handleCountryChange = (e) => {
+    const value = e.target.value;
+    setEditedProfile(prev => ({
+      ...prev,
+      country: value
+    }));
+    
+    if (value) {
+      const filtered = countries.filter(country => 
+        country.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredCountries(filtered);
     } else {
-      alert("Please upload a valid image file.");
+      setFilteredCountries([]);
     }
   };
-  
 
-  // Preference Toggle Handler
-  const togglePreference = (key) => {
+  const selectCountry = (country) => {
+    setEditedProfile(prev => ({
+      ...prev,
+      country: country
+    }));
+    setFilteredCountries([]);
+  };
+
+  const togglePreference = (mood, key) => {
     if (isEditMode) {
-      setEditedProfile(prev => ({
+      setEditedPreferences(prev => ({
         ...prev,
-        preferences: {
-          ...prev.preferences,
-          [key]: !prev.preferences[key]
+        [mood]: {
+          ...prev[mood],
+          [key]: !prev[mood][key]
         }
       }));
     }
   };
 
-  // Enter Edit Mode
+  const toggleMood = (mood) => {
+    setExpandedMood(expandedMood === mood ? null : mood);
+  };
+
   const enterEditMode = () => {
     setIsEditMode(true);
   };
 
-  // Save Profile Handler
   const saveProfile = async () => {
     try {
+      // Validate country before saving
+      if (!countries.includes(editedProfile.country)) {
+        setEditedProfile(prev => ({
+          ...prev,
+          country: DEFAULT_COUNTRY
+        }));
+      }
+  
       setIsSaving(true);
-      const result = await mockApiService.saveProfile(editedProfile);
+      const result = await apiService.updateProfile({
+        profile: {
+          ...editedProfile,
+          userName: editedProfile.userName.slice(0, MAX_LENGTH),
+          country: countries.includes(editedProfile.country) ? 
+            editedProfile.country : DEFAULT_COUNTRY
+        },
+        preferences: editedPreferences
+      });
       
       if (result.success) {
-        // Update the original profile with edited data
-        setProfile(editedProfile);
+        setProfile({
+          ...editedProfile,
+          country: countries.includes(editedProfile.country) ? 
+            editedProfile.country : DEFAULT_COUNTRY
+        });
+        setPreferences(editedPreferences);
         setIsEditMode(false);
         alert(result.message);
       }
@@ -141,33 +220,22 @@ const ProfilePage = () => {
     }
   };
 
-  // Cancel Edit Mode
   const cancelEdit = () => {
-    // Reset edited profile to original profile
     setEditedProfile({...profile});
+    setEditedPreferences({...preferences});
     setIsEditMode(false);
+    setFilteredCountries([]);
   };
 
-  // Error State
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen bg-red-50 text-red-600">
-        <div className="text-center">
-          <AlertTriangle size={48} className="mx-auto mb-4" />
-          <p className="text-xl">{error}</p>
-        </div>
-      </div>
-    );
-  }
+  
 
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Desktop Sidebar */}
       <div className={`
-        ${isSidebarOpen ? 'w-64 ' : 'w-0 '} 
-
+        ${isSidebarOpen ? 'w-64' : 'w-0'} 
         bg-white border-r transition-all duration-300 
-        hidden md:block relative group 
+        hidden md:block relative
       `}> 
         {isSidebarOpen && <SidebarContent current='Profile' />}
       </div>
@@ -187,10 +255,10 @@ const ProfilePage = () => {
         <SidebarContent current='Profile'/>
       </div>
 
-      {/* Profile Page */}
-      <div className="flex flex-col flex-1 relative">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className=" bg-white p-4 flex items-center border-b">
+        <div className="bg-white p-4 flex items-center border-b">
           <button 
             onClick={() => setIsMobileSidebarOpen(true)}
             className="mr-4 md:hidden"
@@ -198,112 +266,145 @@ const ProfilePage = () => {
             <Menu />
           </button>
           <button 
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          className="mx-3 hidden md:block"
-        >
-          {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
-        </button>
-
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="mx-3 hidden md:block"
+          >
+            {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
+          </button>
           <h1 className="text-xl font-semibold flex-1">Profile</h1>
-          
         </div>
 
-        {/* Profile Section */}
-        <div className={`flex-1 overflow-y-auto p-6 space-y-6 `}>
-          {/* Avatar and Name Section */}
-          <div className="bg-white shadow rounded-lg p-6 space-y-4">
-            {/* Avatar */}
-            <div className="flex flex-col items-center ">
-              <div className="relative mb-4">
-                <img 
-                  src={isEditMode ? editedProfile.avatar : profile.avatar} 
-                  alt="Avatar" 
-                  className="w-32 h-32 rounded-full object-cover border-4 border-blue-500"
-                />
-                {isEditMode && (
-                  <label 
-                    htmlFor="avatarUpload" 
-                    className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-2 cursor-pointer"
-                  >
-                    <Camera size={20} />
-                    <input 
-                      type="file" 
-                      id="avatarUpload" 
-                      accept="image/*" 
-                      className="hidden" 
-                      onChange={handleAvatarChange}
-                    />
-                  </label>
-                )}
-              </div>
+        {/* Profile Content */}
+        { error ? (<Error current="Profile"/>): (<div className="flex-1 overflow-y-auto p-6">
+          <div className="bg-white shadow rounded-lg p-6 space-y-6">
+            {/* Basic Info Section */}
+            <div className="text-center space-y-4">
+            {isEditMode ? (
+  <input 
+    type="text" 
+    value={editedProfile.userName}
+    onChange={(e) => setEditedProfile(prev => ({
+      ...prev, 
+      userName: e.target.value.slice(0, MAX_LENGTH)
+    }))}
+    maxLength={MAX_LENGTH}
+    className="text-xl font-semibold text-center border-b border-gray-300 focus:outline-none focus:border-blue-500"
+  />
+) : (
+  <h2 className="text-xl font-semibold">{profile.userName}</h2>
+)}
+              <p className="text-gray-500">{profile.email}</p>
 
-              {/* Name and Email */}
-              <div className="text-center">
-                {isEditMode ? (
-                  <input 
-                    type="text" 
-                    value={editedProfile.userName}
-                    onChange={(e) => setEditedProfile(prev => ({
-                      ...prev, 
-                      userName: e.target.value
-                    }))}
-                    className="text-xl font-semibold text-center border-b border-gray-300 focus:outline-none focus:border-blue-500"
-                  />
-                ) : (
-                  <h2 className="text-xl font-semibold">{profile.userName}</h2>
-                )}
-                <p className="text-gray-500 text-sm mt-2">{profile.email}</p>
+              {/* Country Selection */}
+              <div className="relative max-w-xs mx-auto">
+              {isEditMode ? (
+  <>
+    <input 
+      type="text" 
+      value={editedProfile.country}
+      onChange={(e) => {
+        const value = e.target.value.slice(0, MAX_LENGTH);
+        setEditedProfile(prev => ({
+          ...prev,
+          country: value
+        }));
+        if (value) {
+          const filtered = countries.filter(country => 
+            country.toLowerCase().includes(value.toLowerCase())
+          );
+          setFilteredCountries(filtered);
+        } else {
+          setFilteredCountries([]);
+        }
+      }}
+      placeholder="Select country"
+      maxLength={MAX_LENGTH}
+      className="w-full text-center border-b border-gray-300 focus:outline-none focus:border-blue-500"
+    />
+    {filteredCountries.length > 0 && (
+      <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg">
+        {filteredCountries.map((country) => (
+          <div
+            key={country}
+            className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-left"
+            onClick={() => {
+              setEditedProfile(prev => ({
+                ...prev,
+                country: country
+              }));
+              setFilteredCountries([]);
+            }}
+          >
+            {country}
+          </div>
+        ))}
+      </div>
+    )}
+  </>
+) : (
+  <p className="text-gray-600">{profile.country}</p>
+)}
               </div>
             </div>
 
             {/* Preferences Section */}
-            <div className="mt-6">
+            <div className="mt-8">
               <h3 className="text-lg font-semibold mb-4">Preferences</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {Object.keys(isEditMode ? editedProfile.preferences : profile.preferences).map((key) => (
-                  <div 
-                    key={key} 
-                    className="flex items-center justify-between bg-gray-50 p-3 rounded-lg"
-                  >
-                    <span className="capitalize text-sm md:text-base">{key}</span>
-                    <label className="flex items-center cursor-pointer">
-                      <div className="relative">
-                        <input
-                          type="checkbox"
-                          className="sr-only"
-                          checked={isEditMode 
-                            ? editedProfile.preferences[key] 
-                            : profile.preferences[key]
-                          }
-                          onChange={() => togglePreference(key)}
-                          disabled={!isEditMode}
-                        />
-                        <div className={`
-                          w-10 h-4 rounded-full transition-colors duration-300
-                          ${(isEditMode 
-                            ? editedProfile.preferences[key] 
-                            : profile.preferences[key]) 
-                            ? 'bg-blue-500' 
-                            : 'bg-gray-300'}
-                        `}></div>
-                        <div className={`
-                          dot absolute left-0 top-1/2 transform -translate-y-1/2 
-                          w-6 h-6 bg-white rounded-full shadow transition-transform duration-300
-                          ${(isEditMode 
-                            ? editedProfile.preferences[key] 
-                            : profile.preferences[key]) 
-                            ? 'translate-x-full border-blue-500' 
-                            : 'border-gray-300'}
-                        `}></div>
+              
+              {/* Mood-based Preferences */}
+              <div className="space-y-2">
+                {['happy', 'sad', 'angry', 'anxious', 'fear'].map((mood) => (
+                  <div key={mood} className="border rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => toggleMood(`on_${mood}`)}
+                      className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100"
+                    >
+                      <span className="text-sm font-medium capitalize">On {mood}</span>
+                      {expandedMood === `on_${mood}` ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    </button>
+                    
+                    {expandedMood === `on_${mood}` && (
+                      <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {Object.entries(isEditMode ? 
+                          editedPreferences[`on_${mood}`] : 
+                          preferences[`on_${mood}`]
+                        ).map(([key, value]) => (
+                          <div 
+                            key={key} 
+                            className="flex items-center justify-between bg-gray-50 p-3 rounded-lg"
+                          >
+                            <span className="capitalize text-sm">{key}</span>
+                            <label className="flex items-center cursor-pointer">
+                              <div className="relative">
+                                <input
+                                  type="checkbox"
+                                  className="sr-only"
+                                  checked={value}
+                                  onChange={() => togglePreference(`on_${mood}`, key)}
+                                  disabled={!isEditMode}
+                                />
+                                <div className={`
+                                  w-10 h-4 rounded-full transition-colors duration-300
+                                  ${value ? 'bg-blue-500' : 'bg-gray-300'}
+                                `}></div>
+                                <div className={`
+                                  dot absolute left-0 top-1/2 transform -translate-y-1/2 
+                                  w-6 h-6 bg-white rounded-full shadow transition-transform duration-300
+                                  ${value ? 'translate-x-full border-blue-500' : 'border-gray-300'}
+                                `}></div>
+                              </div>
+                            </label>
+                          </div>
+                        ))}
                       </div>
-                    </label>
+                    )}
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Edit/Save Button Section */}
-            <div className="mt-6 flex justify-end space-x-4">
+            {/* Action Buttons */}
+            <div className="flex justify-end space-x-4 mt-6">
               {isEditMode ? (
                 <>
                   <button 
@@ -317,12 +418,10 @@ const ProfilePage = () => {
                     disabled={isSaving}
                     className={`
                       flex items-center space-x-2 px-4 py-2 rounded 
-                      ${isSaving 
-                        ? 'bg-gray-300 cursor-not-allowed' 
-                        : 'bg-blue-500 text-white hover:bg-blue-600'}
+                      ${isSaving ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}
                     `}
                   >
-                    {isSaving ? <RefreshCw className="animate-spin" /> : <Save />}
+                    {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
                     <span>Save</span>
                   </button>
                 </>
@@ -337,7 +436,7 @@ const ProfilePage = () => {
               )}
             </div>
           </div>
-        </div>
+        </div>)}
       </div>
     </div>
   );

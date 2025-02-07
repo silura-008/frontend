@@ -1,308 +1,455 @@
-import React, { useState, useRef, useEffect } from 'react';
-import axiosAuthInstance from '../utils/axiosAuthInstance';
+import React, { useState, useEffect } from 'react';
 import { 
-  ThumbsUp, 
-  ThumbsDown, 
   ChevronLeft, 
   ChevronRight, 
   Menu,
-  Check,
   X,
-  Send,
-  Loader2
+  Edit,
+  Save,
+  Loader2,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
-
 import SidebarContent from '../components/SidebarContent';
 
-const ChatInterface = () => {
+// Backend service functions
+const apiService = {
+  fetchProfile: async () => {
+    // TODO: Implement actual API call
+    // return await fetch('/api/profile').then(res => res.json());
+    
+    // Mock implementation
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          profile: {
+            userName: 'John Doe',
+            email: 'john.doe@example.com',
+            country: 'United States'
+          },
+          on_happy: {
+            story: true,
+            video: false,
+            articles: true,
+            books: false,
+          },
+          on_sad: {
+            story: false,
+            video: true,
+            articles: true,
+            books: true,
+          },
+          on_angry: {
+            story: true,
+            video: true,
+            articles: false,
+            books: false,
+          },
+          on_anxious: {
+            story: false,
+            video: false,
+            articles: true,
+            books: true,
+          },
+          on_fear: {
+            story: true,
+            video: true,
+            articles: true,
+            books: false,
+          }
+        });
+      }, 500);
+    });
+  },
+
+  updateProfile: async (profileData) => {
+    // TODO: Implement actual API call
+    // return await fetch('/api/profile/update', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(profileData)
+    // }).then(res => res.json());
+    
+    // Mock implementation
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          success: true,
+          message: 'Profile updated successfully'
+        });
+      }, 1000);
+    });
+  }
+};
+
+// List of countries for autocomplete
+const countries = [
+  'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 
+  'Japan', 'India', 'Brazil', 'South Africa'
+]; // Add more countries as needed
+const DEFAULT_COUNTRY = 'United States';
+
+const MAX_LENGTH = 20;
+
+const ProfilePage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState('');
-  const [feedback, setFeedback] = useState(null);
-  const [notification, setNotification] = useState(null);
-  const [isTyping, setIsTyping] = useState(false);
-  const [feedbackStore, setFeedbackStore] = useState(new Map());
-  const messagesEndRef = useRef(null);
-  const inputRef = useRef(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const getConversation = async () => {
-    try {
-      let result = await axiosAuthInstance.get('/api/get_conversation/');
-      setMessages(result.data.conversation);
-    } catch (error) {
-      console.error('Failed to fetch conversation:', error);
-    }
-  };
-
-  const clearChat = async () => {
-    try {
-      await axiosAuthInstance.post('/api/clear_conversation/');
-      setMessages([]);
-      setNotification({
-        icon: <Check className="text-green-500" />,
-        message: 'Chat cleared successfully'
-      });
-      setTimeout(() => setNotification(null), 3000);
-    } catch (error) {
-      console.error('Failed to clear conversation:', error);
-    }
-  };
   
-  const sendMessage = async () => {
-    if (newMessage.trim()) {
-      const newMsg = {
-        id: messages.length + 1,
-        sender: 'user',
-        text: newMessage,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setMessages(prevMessages => [...prevMessages, newMsg]);
-      setNewMessage('');
-      
-      // Simulate bot response (replace this with actual backend logic)
-      // setTimeout(() => {
-      //   const botResponse = {
-      //     id: messages.length + 2,
-      //     sender: 'bot',
-      //     text: 'Thank you for sharing. Would you like to talk more about what\'s on your mind?',
-      //     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      //     feedback: null
-      //   };
-      //   setMessages(prev => [...prev, botResponse]);
-      // }, 1000);
-    
-      try{
-        await axiosAuthInstance.post('/api/chat/', {
-        newMsg,
-      })
-      console.log("send messege")
-    }catch(error){
-      console.log(error);
-      return;
-    }
-    getConversation();
-    }
-  };
+  // Separate state for profile and preferences
+  const [profile, setProfile] = useState({
+    userName: '',
+    email: '',
+    country: ''
+  });
 
-  const handleFeedback = (messageId, type) => {
-    const currentFeedback = feedbackStore.get(messageId);
-    if (currentFeedback === type) return;
+  const [preferences, setPreferences] = useState({
+    on_happy: {},
+    on_sad: {},
+    on_angry: {},
+    on_anxious: {},
+    on_fear: {}
+  });
 
-    const newFeedbackStore = new Map(feedbackStore);
-    newFeedbackStore.set(messageId, type);
-    setFeedbackStore(newFeedbackStore);
-
-    setFeedback({
-      messageId,
-      type,
-      text: '',
-      submitted: false
-    });
-  };
-
-  const submitFeedback = () => {
-    if (feedback) {
-      // Mock storing feedback in a database
-      console.log('Storing feedback:', {
-        messageId: feedback.messageId,
-        type: feedback.type,
-        feedbackText: feedback.text,
-        timestamp: new Date().toISOString()
-      });
-
-      setNotification({
-        icon: <Check className="text-green-500" />,
-        message: 'Feedback submitted successfully'
-      });
-
-      setFeedback(prev => ({ ...prev, submitted: true }));
-      
-      setTimeout(() => {
-        setNotification(null);
-        setFeedback(null);
-      }, 3000);
-    }
-  };
+  const [expandedMood, setExpandedMood] = useState(null);
+  const [editedProfile, setEditedProfile] = useState(null);
+  const [editedPreferences, setEditedPreferences] = useState(null);
+  const [error, setError] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [filteredCountries, setFilteredCountries] = useState([]);
 
   useEffect(() => {
-    getConversation();
+    const fetchUserProfile = async () => {
+      try {
+        const data = await apiService.fetchProfile();
+        setProfile(data.profile);
+        setEditedProfile({...data.profile});
+        
+        const { on_happy, on_sad, on_angry, on_anxious, on_fear } = data;
+        const prefs = { on_happy, on_sad, on_angry, on_anxious, on_fear };
+        setPreferences(prefs);
+        setEditedPreferences({...prefs});
+      } catch (err) {
+        setError('Failed to load profile');
+      }
+    };
+
+    fetchUserProfile();
   }, []);
 
+  const handleCountryChange = (e) => {
+    const value = e.target.value;
+    setEditedProfile(prev => ({
+      ...prev,
+      country: value
+    }));
+    
+    if (value) {
+      const filtered = countries.filter(country => 
+        country.toLowerCase().includes(value.toLowerCase())
+      );
+      setFilteredCountries(filtered);
+    } else {
+      setFilteredCountries([]);
+    }
+  };
+
+  const selectCountry = (country) => {
+    setEditedProfile(prev => ({
+      ...prev,
+      country: country
+    }));
+    setFilteredCountries([]);
+  };
+
+  const togglePreference = (mood, key) => {
+    if (isEditMode) {
+      setEditedPreferences(prev => ({
+        ...prev,
+        [mood]: {
+          ...prev[mood],
+          [key]: !prev[mood][key]
+        }
+      }));
+    }
+  };
+
+  const toggleMood = (mood) => {
+    setExpandedMood(expandedMood === mood ? null : mood);
+  };
+
+  const enterEditMode = () => {
+    setIsEditMode(true);
+  };
+
+  const saveProfile = async () => {
+    try {
+      // Validate country before saving
+      if (!countries.includes(editedProfile.country)) {
+        setEditedProfile(prev => ({
+          ...prev,
+          country: DEFAULT_COUNTRY
+        }));
+      }
+  
+      setIsSaving(true);
+      const result = await apiService.updateProfile({
+        profile: {
+          ...editedProfile,
+          userName: editedProfile.userName.slice(0, MAX_LENGTH),
+          country: countries.includes(editedProfile.country) ? 
+            editedProfile.country : DEFAULT_COUNTRY
+        },
+        preferences: editedPreferences
+      });
+      
+      if (result.success) {
+        setProfile({
+          ...editedProfile,
+          country: countries.includes(editedProfile.country) ? 
+            editedProfile.country : DEFAULT_COUNTRY
+        });
+        setPreferences(editedPreferences);
+        setIsEditMode(false);
+        alert(result.message);
+      }
+    } catch (err) {
+      alert('Failed to save profile');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const cancelEdit = () => {
+    setEditedProfile({...profile});
+    setEditedPreferences({...preferences});
+    setIsEditMode(false);
+    setFilteredCountries([]);
+  };
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-red-50 text-red-600">
+        <div className="text-center">
+          <AlertTriangle size={48} className="mx-auto mb-4" />
+          <p className="text-xl">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-100">
       {/* Desktop Sidebar */}
-      <div className={`${isSidebarOpen ? 'w-64' : 'w-0'} bg-white border-r transition-all duration-300 hidden md:block relative group`}>
-        {isSidebarOpen && <SidebarContent current='Chat' />}
+      <div className={`
+        ${isSidebarOpen ? 'w-64' : 'w-0'} 
+        bg-white border-r transition-all duration-300 
+        hidden md:block relative
+      `}> 
+        {isSidebarOpen && <SidebarContent current='Profile' />}
       </div>
 
       {/* Mobile Sidebar */}
-      <div className={`md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <button onClick={() => setIsMobileSidebarOpen(false)} className="absolute top-4 right-4 p-2">
+      <div className={`
+        md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg 
+        transform transition-transform duration-300
+        ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        <button 
+          onClick={() => setIsMobileSidebarOpen(false)}
+          className="absolute top-4 right-4 p-2"
+        >
           <X />
         </button>
-        <SidebarContent current='Chat'/>
+        <SidebarContent current='Profile'/>
       </div>
 
-      {/* Chat Area */}
-      <div className="flex flex-col flex-1 relative">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="bg-white p-4 flex items-center border-b shadow-sm">
-          <button onClick={() => setIsMobileSidebarOpen(true)} className="mr-4 md:hidden">
+        <div className="bg-white p-4 flex items-center border-b">
+          <button 
+            onClick={() => setIsMobileSidebarOpen(true)}
+            className="mr-4 md:hidden"
+          >
             <Menu />
           </button>
-          <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="mx-3 hidden md:block">
+          <button 
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="mx-3 hidden md:block"
+          >
             {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
           </button>
-          <div className='flex justify-between w-full'>
-            <h1 className="text-xl font-semibold text-[#00413d]">Chat Window</h1>
-            <button 
-              onClick={clearChat}
-              className="text-white bg-[#00413d] hover:bg-[#047a6d] px-3 p-1 rounded-md text-xs md:mr-6 transition duration-200 ease-in-out transform hover:scale-[1.02]"
-            >
-              Clear Chat
-            </button>
-          </div>
+          <h1 className="text-xl font-semibold flex-1">Profile</h1>
         </div>
 
-        {/* Chat Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.length === 0 ? (
-            <div className="flex items-center justify-center h-full text-gray-500">
-              <h1 className='text-2xl font-comfortaa'>What's on your mind?</h1> 
+        {/* Profile Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="bg-white shadow rounded-lg p-6 space-y-6">
+            {/* Basic Info Section */}
+            <div className="text-center space-y-4">
+            {isEditMode ? (
+  <input 
+    type="text" 
+    value={editedProfile.userName}
+    onChange={(e) => setEditedProfile(prev => ({
+      ...prev, 
+      userName: e.target.value.slice(0, MAX_LENGTH)
+    }))}
+    maxLength={MAX_LENGTH}
+    className="text-xl font-semibold text-center border-b border-gray-300 focus:outline-none focus:border-blue-500"
+  />
+) : (
+  <h2 className="text-xl font-semibold">{profile.userName}</h2>
+)}
+              <p className="text-gray-500">{profile.email}</p>
+
+              {/* Country Selection */}
+              <div className="relative max-w-xs mx-auto">
+              {isEditMode ? (
+  <>
+    <input 
+      type="text" 
+      value={editedProfile.country}
+      onChange={(e) => {
+        const value = e.target.value.slice(0, MAX_LENGTH);
+        setEditedProfile(prev => ({
+          ...prev,
+          country: value
+        }));
+        if (value) {
+          const filtered = countries.filter(country => 
+            country.toLowerCase().includes(value.toLowerCase())
+          );
+          setFilteredCountries(filtered);
+        } else {
+          setFilteredCountries([]);
+        }
+      }}
+      placeholder="Select country"
+      maxLength={MAX_LENGTH}
+      className="w-full text-center border-b border-gray-300 focus:outline-none focus:border-blue-500"
+    />
+    {filteredCountries.length > 0 && (
+      <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg">
+        {filteredCountries.map((country) => (
+          <div
+            key={country}
+            className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-left"
+            onClick={() => {
+              setEditedProfile(prev => ({
+                ...prev,
+                country: country
+              }));
+              setFilteredCountries([]);
+            }}
+          >
+            {country}
+          </div>
+        ))}
+      </div>
+    )}
+  </>
+) : (
+  <p className="text-gray-600">{profile.country}</p>
+)}
+              </div>
             </div>
-          ) : (
-            <>
-              {messages.map((msg) => (
-                <div key={msg.id} className={`flex flex-col ${msg.sender === 'bot' ? 'items-start' : 'items-end'} space-y-1 md:mx-6`}>
-                  <div className={`max-w-[70%] p-4 rounded-lg shadow-sm relative ${
-                    msg.sender === 'bot' 
-                      ? 'bg-white text-[#00413d] border border-[#04a298]/20' 
-                      : 'bg-[#00413d] text-white'
-                  }`}>
-                    {msg.text}
-                    <span className="text-xs block mt-1 opacity-60 text-right">
-                      {msg.time}
-                    </span>
+
+            {/* Preferences Section */}
+            <div className="mt-8">
+              <h3 className="text-lg font-semibold mb-4">Preferences</h3>
+              
+              {/* Mood-based Preferences */}
+              <div className="space-y-2">
+                {['happy', 'sad', 'angry', 'anxious', 'fear'].map((mood) => (
+                  <div key={mood} className="border rounded-lg overflow-hidden">
+                    <button
+                      onClick={() => toggleMood(`on_${mood}`)}
+                      className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100"
+                    >
+                      <span className="text-sm font-medium capitalize">On {mood}</span>
+                      {expandedMood === `on_${mood}` ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    </button>
+                    
+                    {expandedMood === `on_${mood}` && (
+                      <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {Object.entries(isEditMode ? 
+                          editedPreferences[`on_${mood}`] : 
+                          preferences[`on_${mood}`]
+                        ).map(([key, value]) => (
+                          <div 
+                            key={key} 
+                            className="flex items-center justify-between bg-gray-50 p-3 rounded-lg"
+                          >
+                            <span className="capitalize text-sm">{key}</span>
+                            <label className="flex items-center cursor-pointer">
+                              <div className="relative">
+                                <input
+                                  type="checkbox"
+                                  className="sr-only"
+                                  checked={value}
+                                  onChange={() => togglePreference(`on_${mood}`, key)}
+                                  disabled={!isEditMode}
+                                />
+                                <div className={`
+                                  w-10 h-4 rounded-full transition-colors duration-300
+                                  ${value ? 'bg-blue-500' : 'bg-gray-300'}
+                                `}></div>
+                                <div className={`
+                                  dot absolute left-0 top-1/2 transform -translate-y-1/2 
+                                  w-6 h-6 bg-white rounded-full shadow transition-transform duration-300
+                                  ${value ? 'translate-x-full border-blue-500' : 'border-gray-300'}
+                                `}></div>
+                              </div>
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  
-                  {msg.sender === 'bot' && (
-                    <div className="flex space-x-2">
-                      <button 
-                        onClick={() => handleFeedback(msg.id, 'up')}
-                        className={`p-1 rounded-full transition-all duration-200 ${
-                          feedbackStore.get(msg.id) === 'up' ? 'bg-[#047a6d]/20' : 'hover:bg-[#047a6d]/10'
-                        }`}
-                      >
-                        <ThumbsUp className={`w-5 h-5 ${
-                          feedbackStore.get(msg.id) === 'up' ? 'text-[#047a6d] fill-[#047a6d]' : 'text-gray-500'
-                        }`} />
-                      </button>
-                      <button 
-                        onClick={() => handleFeedback(msg.id, 'down')}
-                        className={`p-1 rounded-full transition-all duration-200 ${
-                          feedbackStore.get(msg.id) === 'down' ? 'bg-red-200' : 'hover:bg-red-100'
-                        }`}
-                      >
-                        <ThumbsDown className={`w-5 h-5 ${
-                          feedbackStore.get(msg.id) === 'down' ? 'text-red-600 fill-red-600' : 'text-gray-500'
-                        }`} />
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))}
-              {isTyping && (
-                <div className="flex items-center space-x-2 text-[#00413d]">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-sm">Assistant is typing...</span>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </>
-          )}
-        </div>
+                ))}
+              </div>
+            </div>
 
-        {/* Notification */}
-        {notification && (
-          <div className="fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 flex items-center space-x-3 z-50 animate-fade-in">
-            {notification.icon}
-            <span className="text-gray-800">{notification.message}</span>
-          </div>
-        )}
-
-        {/* Feedback Modal */}
-        {feedback && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg w-96 shadow-xl" onClick={(e) => e.stopPropagation()}>
-              {!feedback.submitted ? (
+            {/* Action Buttons */}
+            <div className="flex justify-end space-x-4 mt-6">
+              {isEditMode ? (
                 <>
-                  <h2 className="text-xl font-bold text-[#00413d] mb-4">
-                    {feedback.type === 'up' ? 'Positive' : 'Negative'} Feedback
-                  </h2>
-                  <textarea 
-                    className="w-full h-32 p-4 border rounded-lg mb-4 focus:ring-2 focus:ring-[#04a298] focus:border-transparent"
-                    placeholder="Optional: Share more details about your feedback..."
-                    value={feedback.text}
-                    onChange={(e) => setFeedback(prev => ({...prev, text: e.target.value}))}
-                  />
-                  <div className="flex justify-end space-x-2">
-                    <button 
-                      className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition duration-200"
-                      onClick={() => setFeedback(null)}
-                    >
-                      Cancel
-                    </button>
-                    <button 
-                      className="px-4 py-2 bg-[#00413d] hover:bg-[#047a6d] text-white rounded-lg transition duration-200"
-                      onClick={submitFeedback}
-                    >
-                      Submit
-                    </button>
-                  </div>
+                  <button 
+                    onClick={cancelEdit}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={saveProfile}
+                    disabled={isSaving}
+                    className={`
+                      flex items-center space-x-2 px-4 py-2 rounded 
+                      ${isSaving ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}
+                    `}
+                  >
+                    {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
+                    <span>Save</span>
+                  </button>
                 </>
               ) : (
-                <div className="flex flex-col items-center justify-center space-y-4 py-4">
-                  <Check className="w-16 h-16 text-[#047a6d]" />
-                  <p className="text-xl font-bold text-[#00413d]">Thank You!</p>
-                  <p className="text-gray-600 text-center">
-                    Your feedback has been received and will help improve our service.
-                  </p>
-                </div>
+                <button 
+                  onClick={enterEditMode}
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  <Edit />
+                  <span>Edit</span>
+                </button>
               )}
             </div>
           </div>
-        )}
-
-        {/* Message Input */}
-        <div className="p-4 flex items-center justify-center space-x-2 md:mb-8">
-          <input 
-            ref={inputRef}
-            type="text"
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Type your message..."
-            className="w-full md:w-[60%] p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#04a298] focus:border-transparent transition duration-200"
-            onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-          />
-          <button 
-            onClick={sendMessage}
-            className="bg-[#00413d] text-white p-4 rounded-lg hover:bg-[#047a6d] transition duration-200 ease-in-out transform hover:scale-[1.02]"
-          >
-            <Send className="w-5 h-5" />
-          </button>
         </div>
       </div>
     </div>
   );
 };
 
-export default ChatInterface;
+export default ProfilePage;
