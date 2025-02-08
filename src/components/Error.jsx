@@ -14,6 +14,7 @@ const Error = ({current}) => {
           <Link to={`/${current}`}>
             <button className=" mt-5  py-3 px-8 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-medium transition duration-200 ease-in-out transform hover:scale-[1.02]">
             Try again
+            </button>
           </Link>
         </div>
       </div>

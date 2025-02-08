@@ -12,82 +12,17 @@ import {
 } from 'lucide-react';
 import SidebarContent from '../components/SidebarContent';
 import Error from '../components/Error';
+import axiosAuthInstance from '../utils/axiosAuthInstance';
 // Backend service functions
-const apiService = {
-  fetchProfile: async () => {
-    // TODO: Implement actual API call
-    // return await fetch('/api/profile').then(res => res.json());
-    
-    // Mock implementation
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          profile: {
-            userName: 'John Doe',
-            email: 'john.doe@example.com',
-            country: 'United States'
-          },
-          on_happy: {
-            story: true,
-            video: false,
-            articles: true,
-            books: false,
-          },
-          on_sad: {
-            story: false,
-            video: true,
-            articles: true,
-            books: true,
-          },
-          on_angry: {
-            story: true,
-            video: true,
-            articles: false,
-            books: false,
-          },
-          on_anxious: {
-            story: false,
-            video: false,
-            articles: true,
-            books: true,
-          },
-          on_fear: {
-            story: true,
-            video: true,
-            articles: true,
-            books: false,
-          }
-        });
-      }, 500);
-    });
-  },
 
-  updateProfile: async (profileData) => {
-    // TODO: Implement actual API call
-    // return await fetch('/api/profile/update', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify(profileData)
-    // }).then(res => res.json());
-    
-    // Mock implementation
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          success: true,
-          message: 'Profile updated successfully'
-        });
-      }, 1000);
-    });
-  }
-};
+
 
 // List of countries for autocomplete
 const countries = [
   'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 
   'Japan', 'India', 'Brazil', 'South Africa'
-]; // Add more countries as needed
-const DEFAULT_COUNTRY = 'United States';
+]; 
+const DEFAULT_COUNTRY = 'Country';
 
 const MAX_LENGTH = 20;
 
@@ -97,7 +32,7 @@ const ProfilePage = () => {
   
   // Separate state for profile and preferences
   const [profile, setProfile] = useState({
-    userName: '',
+    name: '',
     email: '',
     country: ''
   });
@@ -119,22 +54,7 @@ const ProfilePage = () => {
   const [filteredCountries, setFilteredCountries] = useState([]);
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const data = await apiService.fetchProfile();
-        setProfile(data.profile);
-        setEditedProfile({...data.profile});
-        
-        const { on_happy, on_sad, on_angry, on_anxious, on_fear } = data;
-        const prefs = { on_happy, on_sad, on_angry, on_anxious, on_fear };
-        setPreferences(prefs);
-        setEditedPreferences({...prefs});
-      } catch (err) {
-        setError(true);
-      }
-    };
-
-    fetchUserProfile();
+    getUserInfo();
   }, []);
 
   const handleCountryChange = (e) => {
@@ -181,42 +101,53 @@ const ProfilePage = () => {
   const enterEditMode = () => {
     setIsEditMode(true);
   };
+  
+const getUserInfo = async () => {
+  try {
+    let prof = await axiosAuthInstance.get('/api/get_profile/');
+    setProfile(prof.data);
+    setEditedProfile({...prof.data});
+    let pref = await axiosAuthInstance.get('/api/get_preference/');
+    setPreferences(pref.data);
+    setEditedPreferences({...pref.data});
+  } catch (error) {
+    console.error('Failed to fetch User Info:', error);
+  }
+};
 
   const saveProfile = async () => {
     try {
-      // Validate country before saving
+     
       if (!countries.includes(editedProfile.country)) {
         setEditedProfile(prev => ({
           ...prev,
           country: DEFAULT_COUNTRY
         }));
       }
-  
-      setIsSaving(true);
-      const result = await apiService.updateProfile({
-        profile: {
-          ...editedProfile,
-          userName: editedProfile.userName.slice(0, MAX_LENGTH),
-          country: countries.includes(editedProfile.country) ? 
-            editedProfile.country : DEFAULT_COUNTRY
-        },
-        preferences: editedPreferences
-      });
-      
-      if (result.success) {
-        setProfile({
-          ...editedProfile,
-          country: countries.includes(editedProfile.country) ? 
-            editedProfile.country : DEFAULT_COUNTRY
-        });
-        setPreferences(editedPreferences);
+        setIsSaving(true);
+        let prsave = await axiosAuthInstance.put('/api/update_profile/',{
+        name: editedProfile.name.slice(0, MAX_LENGTH),
+        country: countries.includes(editedProfile.country) ? 
+            editedProfile.country : DEFAULT_COUNTRY,
+        on_happy: editedPreferences.on_happy,
+        on_sad: editedPreferences.on_sad,
+        on_angry: editedPreferences.on_angry,
+        on_anxious: editedPreferences.on_anxious,
+        on_fear: editedPreferences.on_fear
+        
+        })
+      if (prsave.data.success) {
         setIsEditMode(false);
-        alert(result.message);
+        setProfile(editedProfile);
+        setPreferences(editedPreferences);
       }
-    } catch (err) {
+    } catch (error) {
       alert('Failed to save profile');
+      setEditedProfile(profile);
+      setEditedPreferences(preferences);
     } finally {
       setIsSaving(false);
+      setIsEditMode(false);
     }
   };
 
@@ -282,16 +213,16 @@ const ProfilePage = () => {
             {isEditMode ? (
   <input 
     type="text" 
-    value={editedProfile.userName}
+    value={editedProfile.name}
     onChange={(e) => setEditedProfile(prev => ({
       ...prev, 
-      userName: e.target.value.slice(0, MAX_LENGTH)
+      name: e.target.value.slice(0, MAX_LENGTH)
     }))}
     maxLength={MAX_LENGTH}
     className="text-xl font-semibold text-center border-b border-gray-300 focus:outline-none focus:border-blue-500"
   />
 ) : (
-  <h2 className="text-xl font-semibold">{profile.userName}</h2>
+  <h2 className="text-xl font-semibold">{profile.name}</h2>
 )}
               <p className="text-gray-500">{profile.email}</p>
 
