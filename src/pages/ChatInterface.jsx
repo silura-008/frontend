@@ -185,7 +185,7 @@ const ChatInterface = () => {
             <h1 className="text-xl font-bold text-[#00413d]">Chat Window</h1>
             <button 
               onClick={clearChat}
-              className="text-white bg-[#00413d] hover:bg-[#047a6d] px-4 py-2 rounded-lg text-sm transition duration-200 ease-in-out transform hover:scale-[1.02]"
+              className="text-white bg-[#047a6d] hover:bg-[#00413d] px-4 py-2 rounded-lg text-sm transition duration-200 ease-in-out transform hover:scale-[1.02]"
             >
               Clear Chat
             </button>
