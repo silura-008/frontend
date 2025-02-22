@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 
 import SidebarContent from '../components/SidebarContent';
+import Error from '../components/Error';
 
 const ChatInterface = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -24,6 +25,8 @@ const ChatInterface = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [feedbackStore, setFeedbackStore] = useState(new Map());
   const [sessionExpired, setSessionExpired] = useState(false);
+  const [status, setStatus] = useState('loading');
+
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -55,8 +58,10 @@ const ChatInterface = () => {
       let result = await axiosAuthInstance.get('/api/get_conversation/');
       setMessages(result.data.conversation);
       checkSessionExpiry(result.data.conversation);
+      setStatus('success');
     } catch (error) {
       console.error('Failed to fetch conversation:', error);
+      setStatus('error');
     }
   };
 
@@ -145,6 +150,7 @@ const ChatInterface = () => {
   };
 
   useEffect(() => {
+    setStatus('loading');
     getConversation();
     const interval = setInterval(() => checkSessionExpiry(messages), 60000); // Check every minute
     return () => clearInterval(interval);
@@ -155,43 +161,23 @@ const ChatInterface = () => {
   }, [messages]);
 
   
-
-  return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Desktop Sidebar */}
-      <div className={`${isSidebarOpen ? 'w-64' : 'w-0'} bg-white border-r transition-all duration-300 hidden md:block relative group`}>
-        {isSidebarOpen && <SidebarContent current='Chat' />}
-      </div>
-
-      {/* Mobile Sidebar */}
-      <div className={`md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <button onClick={() => setIsMobileSidebarOpen(false)} className="absolute top-4 right-4 p-2">
-          <X />
-        </button>
-        <SidebarContent current='Chat'/>
-      </div>
-
-      {/* Chat Area */}
-      <div className="flex flex-col flex-1 relative">
-        {/* Header */}
-        <div className={`bg-white p-4 flex items-center border-b shadow-sm ${sessionExpired && 'z-[1]'}`}>
-          <button onClick={() => setIsMobileSidebarOpen(true)} className="mr-4 md:hidden">
-            <Menu />
-          </button>
-          <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="mx-3 hidden md:block">
-            {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
-          </button>
-          <div className='flex justify-between w-full md:mx-6'>
-            <h1 className="text-xl font-bold text-[#00413d]">Chat Window</h1>
-            <button 
-              onClick={clearChat}
-              className="text-white bg-[#047a6d] hover:bg-[#00413d] px-4 py-2 rounded-lg text-sm transition duration-200 ease-in-out transform hover:scale-[1.02]"
-            >
-              Clear Chat
-            </button>
+  const renderContent = () => {
+    if (status === 'loading') {
+      return (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="w-12 h-12 animate-spin mx-auto text-[#04a298]" />
           </div>
         </div>
+      );
+    }
 
+    if (status === 'error') {
+      return <Error current="Chat" /> ;
+    }
+
+    return (
+      <>
         {/* Chat Messages */}
         <div className={`flex-1  p-4 space-y-4 relative ${sessionExpired ? 'overflow-y-hidden' : 'overflow-y-auto'} `}>
           {messages.length === 0 ? (
@@ -349,7 +335,49 @@ const ChatInterface = () => {
                   </div>
                 </div>
               )}
-        
+      </>
+    );
+  };
+
+
+  return (
+    <div className="flex h-screen bg-gray-50">
+      {/* Desktop Sidebar */}
+      <div className={`${isSidebarOpen ? 'w-64' : 'w-0'} bg-white border-r transition-all duration-300 hidden md:block relative group`}>
+        {isSidebarOpen && <SidebarContent current='Chat' />}
+      </div>
+
+      {/* Mobile Sidebar */}
+      <div className={`md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <button onClick={() => setIsMobileSidebarOpen(false)} className="absolute top-4 right-4 p-2">
+          <X />
+        </button>
+        <SidebarContent current='Chat'/>
+      </div>
+
+      {/* Chat Area */}
+      <div className="flex flex-col flex-1 relative">
+        {/* Header */}
+        <div className={`bg-white p-4 flex items-center border-b shadow-sm ${sessionExpired && 'z-[1]'}`}>
+          <button onClick={() => setIsMobileSidebarOpen(true)} className="mr-4 md:hidden">
+            <Menu />
+          </button>
+          <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="mx-3 hidden md:block">
+            {isSidebarOpen ? <ChevronLeft /> : <ChevronRight />}
+          </button>
+          <div className='flex justify-between w-full md:mx-6'>
+            <h1 className="text-xl font-bold text-[#00413d]">Chat Window</h1>
+            <button 
+              onClick={clearChat}
+              className="text-white bg-[#047a6d] hover:bg-[#00413d] px-4 py-2 rounded-lg text-sm transition duration-200 ease-in-out transform hover:scale-[1.02]"
+            >
+              Clear Chat
+            </button>
+          </div>
+        </div>
+
+        {/* Render content based on status */}
+        {renderContent()}
       </div>
       
     </div>

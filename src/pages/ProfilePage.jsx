@@ -24,6 +24,7 @@ const MAX_LENGTH = 20;
 const ProfilePage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [status, setStatus] = useState('loading');
   const [profile, setProfile] = useState({
     name: '',
     email: '',
@@ -39,7 +40,6 @@ const ProfilePage = () => {
   const [expandedMood, setExpandedMood] = useState(null);
   const [editedProfile, setEditedProfile] = useState(null);
   const [editedPreferences, setEditedPreferences] = useState(null);
-  const [error, setError] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [filteredCountries, setFilteredCountries] = useState([]);
@@ -48,7 +48,25 @@ const ProfilePage = () => {
     getUserInfo();
   }, []);
 
-  // ... [Previous handler functions remain the same]
+  const getUserInfo = async () => {
+    try {
+      setStatus('loading');
+      const [profileRes, prefRes] = await Promise.all([
+        axiosAuthInstance.get('/api/get_profile/'),
+        axiosAuthInstance.get('/api/get_preference/')
+      ]);
+      
+      setProfile(profileRes.data);
+      setEditedProfile({...profileRes.data});
+      setPreferences(prefRes.data);
+      setEditedPreferences({...prefRes.data});
+      setStatus('success');
+    } catch (error) {
+      console.error('Failed to fetch User Info:', error);
+      setStatus('error');
+    }
+  };
+
   const handleCountryChange = (e) => {
     const value = e.target.value;
     setEditedProfile(prev => ({
@@ -94,19 +112,6 @@ const ProfilePage = () => {
     setIsEditMode(true);
   };
 
-  const getUserInfo = async () => {
-    try {
-      let prof = await axiosAuthInstance.get('/api/get_profile/');
-      setProfile(prof.data);
-      setEditedProfile({...prof.data});
-      let pref = await axiosAuthInstance.get('/api/get_preference/');
-      setPreferences(pref.data);
-      setEditedPreferences({...pref.data});
-    } catch (error) {
-      console.error('Failed to fetch User Info:', error);
-    }
-  };
-
   const saveProfile = async () => {
     try {
       if (!countries.includes(editedProfile.country)) {
@@ -116,7 +121,7 @@ const ProfilePage = () => {
         }));
       }
       setIsSaving(true);
-      let prsave = await axiosAuthInstance.put('/api/update_profile/', {
+      const response = await axiosAuthInstance.put('/api/update_profile/', {
         name: editedProfile.name.slice(0, MAX_LENGTH),
         country: countries.includes(editedProfile.country) ? 
           editedProfile.country : DEFAULT_COUNTRY,
@@ -126,7 +131,8 @@ const ProfilePage = () => {
         on_anxious: editedPreferences.on_anxious,
         on_fear: editedPreferences.on_fear
       });
-      if (prsave.data.success) {
+      
+      if (response.data.success) {
         setIsEditMode(false);
         setProfile(editedProfile);
         setPreferences(editedPreferences);
@@ -146,6 +152,167 @@ const ProfilePage = () => {
     setEditedPreferences({...preferences});
     setIsEditMode(false);
     setFilteredCountries([]);
+  };
+
+  const renderContent = () => {
+    if (status === 'loading') {
+      return (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="w-12 h-12 animate-spin mx-auto text-[#04a298]" />
+          </div>
+        </div>
+      );
+    }
+
+    if (status === 'error') {
+      return <Error current="Profile" /> ;
+    }
+
+    return (
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="bg-white shadow rounded-lg p-6 space-y-6">
+          {/* Basic Info Section */}
+          <div className="text-center space-y-4">
+            {isEditMode ? (
+              <input 
+                type="text" 
+                value={editedProfile.name}
+                onChange={(e) => setEditedProfile(prev => ({
+                  ...prev, 
+                  name: e.target.value.slice(0, MAX_LENGTH)
+                }))}
+                maxLength={MAX_LENGTH}
+                className="text-xl font-semibold text-center border-b border-gray-300 focus:outline-none focus:border-[#04a298]"
+              />
+            ) : (
+              <h2 className="text-xl font-semibold text-[#00413d]">{profile.name}</h2>
+            )}
+            <p className="text-gray-500">{profile.email}</p>
+
+            {/* Country Selection */}
+            <div className="relative max-w-xs mx-auto">
+              {isEditMode ? (
+                <>
+                  <input 
+                    type="text" 
+                    value={editedProfile.country}
+                    onChange={handleCountryChange}
+                    placeholder="Select country"
+                    maxLength={MAX_LENGTH}
+                    className="w-full text-center border-b border-gray-300 focus:outline-none focus:border-[#04a298]"
+                  />
+                  {filteredCountries.length > 0 && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg">
+                      {filteredCountries.map((country) => (
+                        <div
+                          key={country}
+                          className="px-4 py-2 hover:bg-[#f8fafa] cursor-pointer text-left"
+                          onClick={() => selectCountry(country)}
+                        >
+                          {country}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <p className="text-gray-600">{profile.country}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Preferences Section */}
+          <div className="mt-8">
+            <h3 className="text-lg font-semibold mb-4 text-[#00413d]">Preferences</h3>
+            
+            {/* Mood-based Preferences */}
+            <div className="space-y-2">
+              {['happy', 'sad', 'angry', 'anxious', 'fear'].map((mood) => (
+                <div key={mood} className="border rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => toggleMood(`on_${mood}`)}
+                    className={`w-full flex items-center justify-between p-4 hover:bg-[#f0f7f7] ${expandedMood === `on_${mood}` ? 'bg-[#f0f7f7]' : 'bg-[#f8f8fa]'}`}
+                  >
+                    <span className="text-sm font-medium capitalize">On {mood}</span>
+                    {expandedMood === `on_${mood}` ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  </button>
+                  
+                  {expandedMood === `on_${mood}` && (
+                    <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                      {Object.entries(isEditMode ? 
+                        editedPreferences[`on_${mood}`] : 
+                        preferences[`on_${mood}`]
+                      ).map(([key, value]) => (
+                        <div 
+                          key={key} 
+                          className="flex items-center justify-between bg-[#f8fafa] p-3 rounded-lg"
+                        >
+                          <span className="capitalize text-sm text-[#00413d]">{key}</span>
+                          <label className="flex items-center cursor-pointer">
+                            <div className="relative">
+                              <input
+                                type="checkbox"
+                                className="sr-only"
+                                checked={value}
+                                onChange={() => togglePreference(`on_${mood}`, key)}
+                                disabled={!isEditMode}
+                              />
+                              <div className={`
+                                w-10 h-4 rounded-full transition-colors duration-300
+                                ${value ? 'bg-[#04a290]' : 'bg-gray-300'}
+                              `}></div>
+                              <div className={`
+                                dot absolute left-0 top-1/2 transform -translate-y-1/2 
+                                w-6 h-6 bg-white rounded-full shadow transition-transform duration-300
+                                ${value ? 'translate-x-full border-[#04a298]' : 'border-gray-300'}
+                              `}></div>
+                            </div>
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end space-x-4 mt-6">
+            {isEditMode ? (
+              <>
+                <button 
+                  onClick={cancelEdit}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-[#047a6d] hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={saveProfile}
+                  disabled={isSaving}
+                  className={`
+                    flex items-center space-x-2 px-4 py-2 rounded text-white
+                    ${isSaving ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#047a6d] hover:bg-[#00413d]'}
+                  `}
+                >
+                  {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
+                  <span>Save</span>
+                </button>
+              </>
+            ) : (
+              <button 
+                onClick={enterEditMode}
+                className="flex items-center space-x-2 px-4 py-2 bg-[#00413d] hover:bg-[#047a6d] text-white rounded"
+              >
+                <Edit />
+                <span>Edit</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -193,151 +360,8 @@ const ProfilePage = () => {
           <h1 className="text-xl font-semibold flex-1 text-[#00413d]">Profile</h1>
         </div>
 
-        {/* Profile Content */}
-        {error ? (<Error current="Profile" />) : (
-          <div className="flex-1 overflow-y-auto p-6  ">
-            <div className="bg-white shadow rounded-lg p-6 space-y-6 ">
-              {/* Basic Info Section */}
-              <div className="text-center space-y-4 ">
-                {isEditMode ? (
-                  <input 
-                    type="text" 
-                    value={editedProfile.name}
-                    onChange={(e) => setEditedProfile(prev => ({
-                      ...prev, 
-                      name: e.target.value.slice(0, MAX_LENGTH)
-                    }))}
-                    maxLength={MAX_LENGTH}
-                    className="text-xl font-semibold text-center border-b border-gray-300 focus:outline-none focus:border-[#04a298]"
-                  />
-                ) : (
-                  <h2 className="text-xl font-semibold text-[#00413d]">{profile.name}</h2>
-                )}
-                <p className="text-gray-500">{profile.email}</p>
-
-                {/* Country Selection */}
-                <div className="relative max-w-xs mx-auto">
-                  {isEditMode ? (
-                    <>
-                      <input 
-                        type="text" 
-                        value={editedProfile.country}
-                        onChange={handleCountryChange}
-                        placeholder="Select country"
-                        maxLength={MAX_LENGTH}
-                        className="w-full text-center border-b border-gray-300 focus:outline-none focus:border-[#04a298]"
-                      />
-                      {filteredCountries.length > 0 && (
-                        <div className="absolute z-10 w-full mt-1 bg-white border rounded-md shadow-lg">
-                          {filteredCountries.map((country) => (
-                            <div
-                              key={country}
-                              className="px-4 py-2 hover:bg-[#f8fafa] cursor-pointer text-left"
-                              onClick={() => selectCountry(country)}
-                            >
-                              {country}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <p className="text-gray-600">{profile.country}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Preferences Section */}
-              <div className="mt-8">
-                <h3 className="text-lg font-semibold mb-4 text-[#00413d]">Preferences</h3>
-                
-                {/* Mood-based Preferences */}
-                <div className="space-y-2">
-                  {['happy', 'sad', 'angry', 'anxious', 'fear'].map((mood) => (
-                    <div key={mood} className="border rounded-lg overflow-hidden  ">
-                      <button
-                        onClick={() => toggleMood(`on_${mood}`)}
-                        className={`w-full flex items-center justify-between p-4  hover:bg-[#f0f7f7]  ${expandedMood === `on_${mood}` ? 'bg-[#f0f7f7] ' : 'bg-[#f8f8fa]' }`}
-                      >
-                        <span className="text-sm font-medium capitalize ext-white">On {mood}</span>
-                        {expandedMood === `on_${mood}` ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                      </button>
-                      
-                      {expandedMood === `on_${mood}` && (
-                        <div className="p-4 grid grid-cols-2 md:grid-cols-4 gap-4 ">
-                          {Object.entries(isEditMode ? 
-                            editedPreferences[`on_${mood}`] : 
-                            preferences[`on_${mood}`]
-                          ).map(([key, value]) => (
-                            <div 
-                              key={key} 
-                              className="flex items-center justify-between bg-[#f8fafa] p-3 rounded-lg"
-                            >
-                              <span className="capitalize text-sm text-[#00413d]">{key}</span>
-                              <label className="flex items-center cursor-pointer">
-                                <div className="relative  ">
-                                  <input
-                                    type="checkbox"
-                                    className="sr-only"
-                                    checked={value}
-                                    onChange={() => togglePreference(`on_${mood}`, key)}
-                                    disabled={!isEditMode}
-                                  />
-                                  <div className={`
-                                    w-10 h-4 rounded-full transition-colors duration-300
-                                    ${value ? 'bg-[#04a290]' : 'bg-gray-300'}
-                                  `}></div>
-                                  <div className={`
-                                    dot absolute left-0 top-1/2 transform -translate-y-1/2 
-                                    w-6 h-6 bg-white rounded-full shadow transition-transform duration-300
-                                    ${value ? 'translate-x-full border-[#04a298]' : 'border-gray-300'}
-                                  `}></div>
-                                </div>
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex justify-end space-x-4 mt-6">
-                {isEditMode ? (
-                  <>
-                    <button 
-                      onClick={cancelEdit}
-                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-[#047a6d] hover:text-white"
-                    >
-                      Cancel
-                    </button>
-                    <button 
-                      onClick={saveProfile}
-                      disabled={isSaving}
-                      className={`
-                        flex items-center space-x-2 px-4 py-2 rounded text-white
-                        ${isSaving ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#047a6d] hover:bg-[#00413d]'}
-                      `}
-                    >
-                      {isSaving ? <Loader2 className="animate-spin" /> : <Save />}
-                      <span>Save</span>
-                    </button>
-                  </>
-                ) : (
-                  <button 
-                    onClick={enterEditMode}
-                    className="flex items-center space-x-2 px-4 py-2 bg-[#00413d] hover:bg-[#047a6d] text-white rounded "
-                  >
-                    <Edit />
-                    <span>Edit</span>
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Render content based on status */}
+        {renderContent()}
       </div>
     </div>
   );
