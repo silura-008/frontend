@@ -98,7 +98,7 @@ const Register = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#04a298] focus:border-transparent transition duration-200"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#04a298] focus:border-transparent transition duration-200"
                     placeholder="Enter your email"
                     required
                   />
@@ -114,7 +114,7 @@ const Register = () => {
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#04a298] focus:border-transparent transition duration-200"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#04a298] focus:border-transparent transition duration-200"
                     placeholder="Create a password"
                     required
                   />
@@ -130,7 +130,7 @@ const Register = () => {
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-lg border border-gre-300 focus:ring-2 focus:ring-[#04a298] focus:border-transparent transition duration-200"
+                    className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:outline-none focus:ring-[#04a298] focus:border-transparent transition duration-200"
                     placeholder="Confirm your password"
                     required
                   />
@@ -140,12 +140,12 @@ const Register = () => {
                   <input
                     type="checkbox"
                     id="terms"
-                    className="w-4 h-4 text-[#04a298] border-gray-300 rounded focus:ring-[#04a298]"
+                    className="w-4 h-4  accent-green-600"
                     required
                   />
                   <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
                     I agree to the{' '}
-                    <Link to="/terms" className="text-[#04a298] hover:text-[#00413d]">
+                    <Link  className="text-[#04a298] hover:text-[#00413d] hover:cursor-pointer">
                       Terms and Conditions
                     </Link>
                   </label>
