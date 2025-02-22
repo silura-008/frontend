@@ -27,7 +27,7 @@ const features = [
 
 function Features() {
   return (
-    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 p-8 bg-white '>
+    <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 p-8 bg-white md:mb-10 '>
       {features.map((feature, index) => (
         <Card 
           key={index} 

@@ -2,7 +2,7 @@ import React from 'react'
 
 function Card({ icon, title, description }) {
   return (
-    <div className='p-5 rounded-lg border text-center text-green-950 border-white bg-white shadow-lg'>
+    <div className='p-5 rounded-lg border text-center text-[#00413d] border-white  shadow-[0_0_10px_rgba(0,0,0,0.2)] '>
       <div className='mb-4'>
         <center>{icon}</center>
       </div>
