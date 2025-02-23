@@ -173,7 +173,7 @@ const ChatInterface = () => {
     }
 
     if (status === 'error') {
-      return <Error current="Chat" /> ;
+      return <Error /> ;
     }
 
     return (

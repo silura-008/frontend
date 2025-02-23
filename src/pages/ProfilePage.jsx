@@ -45,12 +45,12 @@ const ProfilePage = () => {
   const [filteredCountries, setFilteredCountries] = useState([]);
 
   useEffect(() => {
+    setStatus('loading');
     getUserInfo();
   }, []);
 
   const getUserInfo = async () => {
     try {
-      setStatus('loading');
       const [profileRes, prefRes] = await Promise.all([
         axiosAuthInstance.get('/api/get_profile/'),
         axiosAuthInstance.get('/api/get_preference/')
@@ -166,7 +166,7 @@ const ProfilePage = () => {
     }
 
     if (status === 'error') {
-      return <Error current="Profile" /> ;
+      return <Error /> ;
     }
 
     return (

@@ -233,13 +233,13 @@ const DashBoard = () => {
               <div>
                 <textarea 
                   placeholder="Optional note..."
-                  className="w-full border rounded p-2 mb-4"
+                  className="w-full border rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-[#04a298] focus:border-transparent "
                   value={moodNote}
                   onChange={(e) => setMoodNote(e.target.value)}
                 />
                 <button 
                   onClick={logMood}
-                  className="w-full bg-blue-500 text-white py-2 rounded"
+                  className="w-full bg-[#04a298] hover:bg-[#00413d] text-white py-2 rounded transition duration-200 ease-in-out transform hover:scale-[1.02]"
                 >
                   Log Mood
                 </button>
@@ -247,18 +247,25 @@ const DashBoard = () => {
             )}
           <div className='pt-3'>
               {
-                moodHistory.map((day, index)=>{
-                  return(
-                    
-                    <div key={day.date} className={`flex justify-between ${moodIcons[day.mood].bgcolor} p-2 border rounded-md my-2 text-sm shadow-sm `}>
+                moodHistory.length > 0 ? (
+                  moodHistory.map((day, index) => (
+                    <div
+                      key={day.date}
+                      className={`flex justify-between ${moodIcons[day.mood].bgcolor} p-2 border rounded-md my-2 text-sm shadow-sm`}
+                    >
                       <p>{day.date}</p>
                       <p>{day.mood}</p>
-                      <p >{day.note}</p>
-                      <p >{day.task_rate}</p>
+                      <p>{day.note}</p>
+                      <p>{day.task_rate}</p>
                     </div>
-                    
-                  )
-                })
+                  ))
+                ) : (
+                  <div className="bg-gray-50 p-4 rounded-md shadow-sm text-center border border-[#00413d]">
+                  <p className="text-[#00413d] font-medium">No mood history yet!</p>
+                  <p className="text-[#00413d] text-sm">Log your mood and daily activities to start tracking your progress.</p>
+                </div>
+                )
+                
               }
           </div>  
           </div>

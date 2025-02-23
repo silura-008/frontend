@@ -21,14 +21,28 @@ import {
 const COLORS = [ "#00C49F","#0088FE","#FF8042" ,"#FFBB28" ]; 
 
 const Charts = ({chart}) => {
+  const count = chart.log_count === 0 ? 999 : chart.log_count
+  let moodRatios = [];
+  if (chart.log_count ===0){
+    moodRatios = [
+      {name:"happy",value:100},
+      {name:"sad",value:100},
+      {name:"angry",value:100},
+      {name:"anxious",value:100},
+    ]
+  }else{
+    Object.entries(chart).forEach(([key, value]) => {
+      if (key.includes("ratio")) {
+        moodRatios.push({ name: key.replace('_ratio', ''), value });
+      }
+    });
+  }
+
   
-  const count = chart.log_count
-  const moodRatios = []
-  Object.entries(chart).forEach(([key, value]) => {
-    if (key.includes("ratio")) {
-      moodRatios.push({ name: key.replace('_ratio', ''), value });
-    }
-  });
+
+  console.log(moodRatios)
+  console.log(count)
+  console.log("rope")
   
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
