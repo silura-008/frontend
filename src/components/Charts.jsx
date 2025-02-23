@@ -40,9 +40,6 @@ const Charts = ({chart}) => {
 
   
 
-  console.log(moodRatios)
-  console.log(count)
-  console.log("rope")
   
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {

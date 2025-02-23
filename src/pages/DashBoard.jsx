@@ -83,12 +83,14 @@ const DashBoard = () => {
     } catch (error) {
       console.error('Failed to update task:', error);
     }
+    getMoodHistory()
   };
 
   const getMoodHistory = async () =>{
     try{
       let result = await axiosAuthInstance.get('/api/get_moodhistory/')
       setMoodHistory(result.data)
+      getRatios();
     }catch(error){
       console.log("failed to get moodhistory")
       console.log(error)
@@ -106,6 +108,7 @@ const DashBoard = () => {
     }catch(error){
       console.log(error.response?.data)
     }
+    getRatios();
   };
   
   const logMood = () => {
@@ -127,6 +130,7 @@ const DashBoard = () => {
       }
 
       addMoodLog(newMoodEntry.date,newMoodEntry.mood,newMoodEntry.note);
+      
   
       setSelectedMood(null);
       setMoodNote('');
@@ -147,7 +151,6 @@ const DashBoard = () => {
   useEffect(() => {
     getTasks();
     getMoodHistory()
-    getRatios()
   }, []);
 
   
