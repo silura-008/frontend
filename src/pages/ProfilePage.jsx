@@ -15,9 +15,47 @@ import Error from '../components/Error';
 import axiosAuthInstance from '../utils/axiosAuthInstance';
 
 const countries = [
-  'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany', 'France', 
-  'Japan', 'India', 'Brazil', 'South Africa'
+  'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 
+  'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan', 'Bahamas', 
+  'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium', 'Belize', 
+  'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 
+  'Brazil', 'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cabo Verde', 
+  'Cambodia', 'Cameroon', 'Canada', 'Central African Republic', 'Chad', 
+  'Chile', 'China', 'Colombia', 'Comoros', 'Congo, Democratic Republic of the', 
+  'Congo, Republic of the', 'Costa Rica', 'Croatia', 'Cuba', 'Cyprus', 
+  'Czech Republic', 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 
+  'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 
+  'Estonia', 'Eswatini', 'Ethiopia', 'Fiji', 'Finland', 'France', 
+  'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 
+  'Grenada', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana', 
+  'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India', 'Indonesia', 
+  'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy', 'Jamaica', 
+  'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Korea, North', 
+  'Korea, South', 'Kuwait', 'Kyrgyzstan', 'Laos', 'Latvia', 
+  'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 
+  'Lithuania', 'Luxembourg', 'Madagascar', 'Malawi', 'Malaysia', 
+  'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 
+  'Mauritius', 'Mexico', 'Micronesia', 'Moldova', 'Monaco', 
+  'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar', 
+  'Namibia', 'Nauru', 'Nepal', 'Netherlands', 'New Zealand', 
+  'Nicaragua', 'Niger', 'Nigeria', 'North Macedonia', 'Norway', 
+  'Oman', 'Pakistan', 'Palau', 'Palestine', 'Panama', 'Papua New Guinea', 
+  'Paraguay', 'Peru', 'Philippines', 'Poland', 'Portugal', 
+  'Qatar', 'Romania', 'Russia', 'Rwanda', 'Saint Kitts and Nevis', 
+  'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 
+  'San Marino', 'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 
+  'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia', 
+  'Slovenia', 'Solomon Islands', 'Somalia', 'South Africa', 
+  'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Suriname', 
+  'Sweden', 'Switzerland', 'Syria', 'Taiwan', 'Tajikistan', 
+  'Tanzania', 'Thailand', 'Timor-Leste', 'Togo', 'Tonga', 
+  'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan', 
+  'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 
+  'United Kingdom', 'United States', 'Uruguay', 'Uzbekistan', 
+  'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam', 
+  'Yemen', 'Zambia', 'Zimbabwe'
 ];
+
 const DEFAULT_COUNTRY = 'Country';
 const MAX_LENGTH = 20;
 
@@ -31,7 +69,6 @@ const ProfilePage = () => {
     country: ''
   });
   const [preferences, setPreferences] = useState({
-    on_happy: {},
     on_sad: {},
     on_angry: {},
     on_anxious: {},
@@ -125,7 +162,6 @@ const ProfilePage = () => {
         name: editedProfile.name.slice(0, MAX_LENGTH),
         country: countries.includes(editedProfile.country) ? 
           editedProfile.country : DEFAULT_COUNTRY,
-        on_happy: editedPreferences.on_happy,
         on_sad: editedPreferences.on_sad,
         on_angry: editedPreferences.on_angry,
         on_anxious: editedPreferences.on_anxious,
@@ -224,17 +260,17 @@ const ProfilePage = () => {
 
           {/* Preferences Section */}
           <div className="mt-8">
-            <h3 className="text-lg font-semibold mb-4 text-[#00413d]">Preferences</h3>
+            <h3 className="text-lg font-semibold mb-4 text-[#00413d]">Coping Preferences</h3>
             
             {/* Mood-based Preferences */}
             <div className="space-y-2">
-              {['happy', 'sad', 'angry', 'anxious', 'fear'].map((mood) => (
+              {[ 'sad', 'angry', 'anxious', 'fear'].map((mood) => (
                 <div key={mood} className="border rounded-lg overflow-hidden">
                   <button
                     onClick={() => toggleMood(`on_${mood}`)}
                     className={`w-full flex items-center justify-between p-4 hover:bg-[#f0f7f7] ${expandedMood === `on_${mood}` ? 'bg-[#f0f7f7]' : 'bg-[#f8f8fa]'}`}
                   >
-                    <span className="text-sm font-medium capitalize">On {mood}</span>
+                    <span className="text-sm font-medium capitalize">When {mood}</span>
                     {expandedMood === `on_${mood}` ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                   </button>
                   
