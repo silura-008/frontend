@@ -370,7 +370,7 @@ const ProfilePage = () => {
       `}>
         <button 
           onClick={() => setIsMobileSidebarOpen(false)}
-          className="absolute top-4 right-4 p-2"
+          className="absolute top-5 right-1 p-2 z-10 w-10 h-10 shadow-sm  bg-white rounded-full"
         >
           <X />
         </button>

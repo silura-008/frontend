@@ -349,7 +349,8 @@ const ChatInterface = () => {
 
       {/* Mobile Sidebar */}
       <div className={`md:hidden fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ${isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <button onClick={() => setIsMobileSidebarOpen(false)} className="absolute top-4 right-4 p-2">
+        <button onClick={() => setIsMobileSidebarOpen(false)} 
+        className="absolute top-5 right-1 p-2 z-10 w-10 h-10 shadow-sm  bg-white rounded-full">
           <X />
         </button>
         <SidebarContent current='Chat'/>

@@ -9,8 +9,8 @@ import {
   } from 'lucide-react';
 
 const SidebarContent = ({current = " " }) => (
-    <nav className="h-full  p-4 py-5 flex flex-col justify-between">
-      <div className='flex flex-col gap-2'>
+    <nav className="h-full  p-4 py-5  flex flex-col justify-between">
+      <div className='flex flex-col gap-2 '>
 
         
         <SidebarItem 
