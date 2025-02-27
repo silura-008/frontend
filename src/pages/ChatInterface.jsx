@@ -9,7 +9,8 @@ import {
   Check,
   X,
   Send,
-  Loader2
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
 
 import SidebarContent from '../components/SidebarContent';
@@ -26,6 +27,9 @@ const ChatInterface = () => {
   const [feedbackStore, setFeedbackStore] = useState(new Map());
   const [sessionExpired, setSessionExpired] = useState(false);
   const [status, setStatus] = useState('loading');
+  const [tempFeedback, setTempFeedback] = useState({ messageId: null, type: null });
+  const [serverBusy, setServerBusy] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -70,6 +74,21 @@ const ChatInterface = () => {
     setSessionExpired(false);
   };
 
+  const resetSession = async () => {
+    setIsResetting(true);
+    try {
+      await axiosAuthInstance.post('/api/clear_conversation/');
+      setMessages([]);
+      setTimeout(() => {
+        setIsResetting(false);
+        setServerBusy(false);
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to reset session:', error);
+      setIsResetting(false);
+    }
+  };
+
   const clearChat = async () => {
     try {
       await axiosAuthInstance.post('/api/clear_conversation/');
@@ -78,6 +97,7 @@ const ChatInterface = () => {
         icon: <Check className="text-green-500" />,
         message: 'Chat cleared successfully'
       });
+      setServerBusy(false);
       setTimeout(() => setNotification(null), 3000);
     } catch (error) {
       console.error('Failed to clear conversation:', error);
@@ -101,22 +121,35 @@ const ChatInterface = () => {
       try {
         await axiosAuthInstance.post('/api/chat/', { newMsg });
         await getConversation();
+        setServerBusy(false);
       } catch (error) {
         console.error(error);
+        setServerBusy(true);
       } finally {
         setIsTyping(false);
       }
     }
   };
 
+  const retrySendMessage = async () => {
+    setServerBusy(false);
+    setIsTyping(true);
+    try {
+      await axiosAuthInstance.post('/api/chat/', { 
+        newMsg: messages[messages.length - 2] // Get the last user message
+      });
+      await getConversation();
+    } catch (error) {
+      console.error(error);
+      setServerBusy(true);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
   const handleFeedback = (messageId, type) => {
-    const currentFeedback = feedbackStore.get(messageId);
-    if (currentFeedback === type) return;
-
-    const newFeedbackStore = new Map(feedbackStore);
-    newFeedbackStore.set(messageId, type);
-    setFeedbackStore(newFeedbackStore);
-
+    setTempFeedback({ messageId, type });
+    
     setFeedback({
       messageId,
       type,
@@ -127,6 +160,11 @@ const ChatInterface = () => {
 
   const submitFeedback = () => {
     if (feedback) {
+      // Store the feedback after submission
+      const newFeedbackStore = new Map(feedbackStore);
+      newFeedbackStore.set(feedback.messageId, feedback.type);
+      setFeedbackStore(newFeedbackStore);
+      
       // Mock storing feedback in a database
       console.log('Storing feedback:', {
         messageId: feedback.messageId,
@@ -145,6 +183,7 @@ const ChatInterface = () => {
       setTimeout(() => {
         setNotification(null);
         setFeedback(null);
+        setTempFeedback({ messageId: null, type: null });
       }, 3000);
     }
   };
@@ -202,6 +241,27 @@ const ChatInterface = () => {
                           <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                         </div>
                       )}
+                      {serverBusy && msg.sender === 'bot' && msg.id === messages.length && (
+                        <div className="mt-2">
+                          <div className="text-red-500 font-medium mb-2">Server is busy. Please try again.</div>
+                          <div className="flex space-x-3">
+                            <button 
+                              onClick={retrySendMessage}
+                              className="flex items-center space-x-1 bg-[#00413d] text-white px-3 py-1.5 rounded text-sm hover:bg-[#047a6d]"
+                            >
+                              <RefreshCw className="w-4 h-4" />
+                              <span>Retry</span>
+                            </button>
+                            <button 
+                              onClick={resetSession}
+                              className="flex items-center space-x-1 bg-gray-200 text-gray-700 px-3 py-1.5 rounded text-sm hover:bg-gray-300"
+                            >
+                              <X className="w-4 h-4" />
+                              <span>Reset Session</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
                       <span className="text-xs block mt-1 opacity-60 text-right">
                         {msg.time}
                       </span>
@@ -211,23 +271,27 @@ const ChatInterface = () => {
                       <div className="flex space-x-2">
                         <button 
                           onClick={() => handleFeedback(msg.id, 'up')}
-                          className={`p-1.5 rounded-full transition-all duration-200 hover:bg-[#047a6d]/5`}
-                        >
-                          <ThumbsUp className={`w-5 h-5 ${
+                          className={`p-1.5 rounded-full transition-all duration-200 ${
                             feedbackStore.get(msg.id) === 'up' 
-                              ? 'text-[#047a6d] fill-[#047a6d]' 
-                              : 'text-gray-400 hover:text-[#047a6d]'
-                          }`} />
+                              ? 'bg-[#047a6d]/20 text-[#047a6d]' 
+                              : tempFeedback.messageId === msg.id && tempFeedback.type === 'up'
+                                ? 'bg-[#047a6d]/20 text-[#047a6d]'
+                                : 'hover:bg-[#047a6d]/20 hover:text-[#047a6d] text-gray-400'
+                          }`}
+                        >
+                          <ThumbsUp className="w-5 h-5" />
                         </button>
                         <button 
                           onClick={() => handleFeedback(msg.id, 'down')}
-                          className={`p-1.5 rounded-full transition-all duration-200 hover:bg-red-50`}
-                        >
-                          <ThumbsDown className={`w-5 h-5 ${
+                          className={`p-1.5 rounded-full transition-all duration-200 ${
                             feedbackStore.get(msg.id) === 'down'
-                              ? 'text-red-500 fill-red-500'
-                              : 'text-gray-400 hover:text-red-500'
-                          }`} />
+                              ? 'bg-red-500/20 text-red-500'
+                              : tempFeedback.messageId === msg.id && tempFeedback.type === 'down'
+                                ? 'bg-red-500/80 text-red-500'
+                                : 'hover:bg-red-500/20 hover:text-red-500 text-gray-400'
+                          }`}
+                        >
+                          <ThumbsDown className="w-5 h-5" />
                         </button>
                       </div>
                     )}
@@ -235,14 +299,6 @@ const ChatInterface = () => {
                 ))}
               </div>
               
-              
-              
-              {/* {isTyping && !sessionExpired && (
-                <div className="flex items-center space-x-2 text-[#00413d] md:mx-6">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-sm">Assistant is typing...</span>
-                </div>
-              )} */}
               <div ref={messagesEndRef} />
             </>
           )}
@@ -253,6 +309,14 @@ const ChatInterface = () => {
           <div className="fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 flex items-center space-x-3 z-50 animate-fade-in">
             {notification.icon}
             <span className="text-gray-800">{notification.message}</span>
+          </div>
+        )}
+
+        {/* Resetting Session Notification */}
+        {isResetting && (
+          <div className="fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 flex items-center space-x-3 z-50 animate-fade-in">
+            <Loader2 className="w-5 h-5 animate-spin text-[#04a298]" />
+            <span className="text-gray-800">Resetting session...</span>
           </div>
         )}
 
@@ -274,7 +338,10 @@ const ChatInterface = () => {
                   <div className="flex justify-end space-x-2">
                     <button 
                       className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition duration-200"
-                      onClick={() => setFeedback(null)}
+                      onClick={() => {
+                        setFeedback(null);
+                        setTempFeedback({ messageId: null, type: null });
+                      }}
                     >
                       Cancel
                     </button>
@@ -309,11 +376,11 @@ const ChatInterface = () => {
             placeholder="Type your message..."
             className="w-full md:w-[60%] p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#04a298] focus:border-transparent transition duration-200"
             onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-            disabled={sessionExpired}
+            disabled={sessionExpired || isResetting}
           />
           <button 
             onClick={sendMessage}
-            disabled={sessionExpired}
+            disabled={sessionExpired || isResetting}
             className={`p-4 rounded-lg transition duration-200 ease-in-out transform hover:scale-[1.02]
                bg-[#00413d] hover:bg-[#047a6d] text-white
             }`}
@@ -371,6 +438,7 @@ const ChatInterface = () => {
             <button 
               onClick={clearChat}
               className="text-white bg-[#047a6d] hover:bg-[#00413d] px-4 py-2 rounded-lg text-sm transition duration-200 ease-in-out transform hover:scale-[1.02]"
+              disabled={isResetting}
             >
               Clear Chat
             </button>
@@ -386,4 +454,3 @@ const ChatInterface = () => {
 };
 
 export default ChatInterface;
-
