@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, CheckCircle2, Eye,EyeOff } from 'lucide-react';
 import Notification from '../components/Notification';
 import axiosInstance from '../utils/axiosInstance';
+
 
 export const ResetPassword = () => {
 
         const { uid, token } = useParams();
         const [notification, setNotification] = useState(null);
+        
+        const [showPassword, setShowPassword] = useState(false);
+        const [showConfirmPassword, setShowConfirmPassword] = useState(false);
         
         const [formData, setFormData] = useState({
           new_password: '',
@@ -80,32 +84,50 @@ export const ResetPassword = () => {
                     <label htmlFor="new_password" className="block text-gray-700 mb-2 font-medium">
                       New Password
                     </label>
+                    <div className="relative">
                     <input
-                      type="password"
+                      type={showPassword ? 'text' : 'password'}
                       id="new_password"
                       name="new_password"
                       value={formData.new_password}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#04a298] focus:border-transparent transition duration-200"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#04a298] focus:outline-none focus:border-transparent transition duration-200"
                       placeholder="Enter new password"
                       required
                     />
+                    <button
+                      type="button"
+                      className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 hover:text-[#00413d] focus:outline-none"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff /> : <Eye />}
+                    </button>
+                    </div>
                   </div>
       
                   <div className="mb-6">
                     <label htmlFor="re_new_password" className="block text-gray-700 mb-2 font-medium">
                       Confirm New Password
                     </label>
+                    <div className="relative">
                     <input
-                      type="password"
+                      type={showConfirmPassword ? 'text' : 'password'}
                       id="re_new_password"
                       name="re_new_password"
                       value={formData.re_new_password}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#04a298] focus:border-transparent transition duration-200"
+                      className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#04a298] focus:outline-none focus:border-transparent transition duration-200"
                       placeholder="Confirm new password"
                       required
                     />
+                    <button
+                      type="button"
+                      className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 hover:text-[#00413d] focus:outline-none"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? <EyeOff /> : <Eye />}
+                    </button>
+                    </div>
                   </div>
       
                   <button

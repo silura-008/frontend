@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle2 } from 'lucide-react';
-import { CircleAlert , Loader2} from 'lucide-react';
+import { CircleAlert, Loader2,Eye,EyeOff } from 'lucide-react';
 import Notification from '../components/Notification';
 import axiosInstance from '../utils/axiosInstance';
 
@@ -16,7 +16,8 @@ const Register = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [notification, setNotification] = useState(null);
   const [status, setStatus] = useState('idle');
-
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevData => ({
@@ -108,8 +109,9 @@ const Register = () => {
                   <label className="block text-gray-700 mb-2 font-medium" htmlFor="password">
                     Password
                   </label>
+                  <div className="relative">
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     id="password"
                     name="password"
                     value={formData.password}
@@ -118,14 +120,23 @@ const Register = () => {
                     placeholder="Create a password"
                     required
                   />
+                  <button
+                    type="button"
+                    className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 hover:text-[#00413d] focus:outline-none"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff /> : <Eye />}
+                  </button>
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-gray-700 mb-2 font-medium" htmlFor="confirmPassword">
                     Confirm Password
                   </label>
+                  <div className="relative">
                   <input
-                    type="password"
+                    type={showConfirmPassword ? 'text' : 'password'}
                     id="confirmPassword"
                     name="confirmPassword"
                     value={formData.confirmPassword}
@@ -134,6 +145,14 @@ const Register = () => {
                     placeholder="Confirm your password"
                     required
                   />
+                  <button
+                    type="button"
+                    className="absolute top-1/2 right-3 transform -translate-y-1/2 text-gray-500 hover:text-[#00413d] focus:outline-none"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? <EyeOff /> : <Eye />}
+                  </button>
+                  </div>
                 </div>
 
                 <div className="flex items-center">
