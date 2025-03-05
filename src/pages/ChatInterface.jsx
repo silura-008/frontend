@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axiosAuthInstance from '../utils/axiosAuthInstance';
+import axios from 'axios';
 import { 
   ThumbsUp, 
   ThumbsDown, 
@@ -15,6 +16,7 @@ import {
 
 import SidebarContent from '../components/SidebarContent';
 import Error from '../components/Error';
+import LinkPreview from '../components/LinkPreview';
 
 const ChatInterface = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -30,6 +32,7 @@ const ChatInterface = () => {
   const [tempFeedback, setTempFeedback] = useState({ messageId: null, type: null });
   const [serverBusy, setServerBusy] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [previews,setPreviews] = useState({});
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -38,12 +41,7 @@ const ChatInterface = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  useEffect(() => {
-    if(!sessionExpired){
-      scrollToBottom();
-    }
-    checkSessionExpiry(messages);
-  }, [messages]);
+  
 
   const checkSessionExpiry = (messageList) => {
     if (messageList && messageList.length > 0) {
@@ -56,6 +54,19 @@ const ChatInterface = () => {
       }
     }
   };
+
+
+
+const fetchLinkPreview = async (url) => {
+  try {
+    let key = "589d4b63631a495a1f22be72988e32ea"
+    const response = await axios.get(`https://api.linkpreview.net/?key=${key}&q=${url}`);
+    return response.data; 
+  } catch (error) {
+    console.error("Error fetching link preview:", error);
+    return null;
+  }
+};
 
   const getConversation = async () => {
     try {
@@ -189,6 +200,13 @@ const ChatInterface = () => {
   };
 
   useEffect(() => {
+    if(!sessionExpired){
+      scrollToBottom();
+    }
+    checkSessionExpiry(messages);
+  }, [messages]);
+
+  useEffect(() => {
     setStatus('loading');
     getConversation();
     const interval = setInterval(() => checkSessionExpiry(messages), 60000); // Check every minute
@@ -196,8 +214,17 @@ const ChatInterface = () => {
   }, []);
 
   useEffect(() => {
-    checkSessionExpiry(messages);
+    messages.forEach((msg) => {
+      const urlMatch = msg.text.match(/(https?:\/\/[^\s]+)/);
+      if (msg.sender === "bot" && urlMatch && !previews[msg.id]) {
+        fetchLinkPreview(urlMatch[0]).then((data) => {
+          setPreviews((prev) => ({ ...prev, [msg.id]: data }));
+        });
+      }
+    });
   }, [messages]);
+
+  
 
   
   const renderContent = () => {
@@ -233,7 +260,7 @@ const ChatInterface = () => {
                         ? 'bg-[#f0f7f7] text-[#00413d] border border-[#04a298]/20' 
                         : 'bg-[#00413d] text-white'
                     }`}>
-                      {msg.text}
+                      {msg.text.match(/(https?:\/\/[^\s]+)/) ? <> {msg.text.replace(/(https?:\/\/[^\s]+)/,'').trim()} <LinkPreview previewData={previews[msg.id]} /></> : msg.text}
                       {isTyping && msg.sender === 'bot' && msg.id === messages.length && (
                         <div className="flex space-x-1 mt-2">
                           <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
