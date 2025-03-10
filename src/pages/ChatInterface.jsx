@@ -215,7 +215,7 @@ const fetchLinkPreview = async (url) => {
 
   useEffect(() => {
     messages.forEach((msg) => {
-      const urlMatch = msg.text.match(/(https?:\/\/[^\s]+)/);
+      const urlMatch = msg.text?.match(/(https?:\/\/[^\s]+)/);
       if (msg.sender === "bot" && urlMatch && !previews[msg.id]) {
         fetchLinkPreview(urlMatch[0]).then((data) => {
           setPreviews((prev) => ({ ...prev, [msg.id]: data }));
@@ -260,7 +260,7 @@ const fetchLinkPreview = async (url) => {
                         ? 'bg-[#f0f7f7] text-[#00413d] border border-[#04a298]/20' 
                         : 'bg-[#00413d] text-white'
                     }`}>
-                      {msg.text.match(/(https?:\/\/[^\s]+)/) ? <> {msg.text.replace(/(https?:\/\/[^\s]+)/,'').trim()} <LinkPreview previewData={previews[msg.id]} /></> : msg.text}
+                      {msg.text?.match(/(https?:\/\/[^\s]+)/) ? <> {msg.text.replace(/(https?:\/\/[^\s]+)/,'').trim()} <LinkPreview previewData={previews[msg.id]} /></> : msg.text}
                       {isTyping && msg.sender === 'bot' && msg.id === messages.length && (
                         <div className="flex space-x-1 mt-2">
                           <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
