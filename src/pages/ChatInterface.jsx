@@ -160,7 +160,6 @@ const fetchLinkPreview = async (url) => {
 
   const handleFeedback = (messageId, type) => {
     setTempFeedback({ messageId, type });
-    
     setFeedback({
       messageId,
       type,
@@ -169,34 +168,39 @@ const fetchLinkPreview = async (url) => {
     });
   };
 
-  const submitFeedback = () => {
-    if (feedback) {
-      // Store the feedback after submission
-      const newFeedbackStore = new Map(feedbackStore);
-      newFeedbackStore.set(feedback.messageId, feedback.type);
-      setFeedbackStore(newFeedbackStore);
+  const submitFeedback = async() => {
+      try{
+        await axiosAuthInstance.post('/api/submit_feedback/',{
+            pair: {"user":messages[feedback.messageId-2].text,"bot":messages[feedback.messageId-1].text},
+            user_reaction: feedback.type,
+            text: feedback.text
+            });
+            const newFeedbackStore = new Map(feedbackStore);
+            newFeedbackStore.set(feedback.messageId, feedback.type);
+            setFeedbackStore(newFeedbackStore);
+            setNotification({
+              icon: <Check className="text-green-500" />,
+              message: 'Feedback submitted successfully'
+            });
       
-      // Mock storing feedback in a database
-      console.log('Storing feedback:', {
-        messageId: feedback.messageId,
-        type: feedback.type,
-        feedbackText: feedback.text,
-        timestamp: new Date().toISOString()
-      });
+            setFeedback(prev => ({ ...prev, submitted: true }));
+          }catch(error){
+            setNotification({
+              icon: <X className="text-red-500" />,
+              message: 'Feedback Submission Failed'
+            });
+            
+            
+		        setFeedback(null);
+            console.log(error);
+          }
 
-      setNotification({
-        icon: <Check className="text-green-500" />,
-        message: 'Feedback submitted successfully'
-      });
-
-      setFeedback(prev => ({ ...prev, submitted: true }));
-      
       setTimeout(() => {
-        setNotification(null);
-        setFeedback(null);
+        setNotification(null)
+		    setFeedback(null);
         setTempFeedback({ messageId: null, type: null });
       }, 3000);
-    }
+    
   };
 
   useEffect(() => {
@@ -314,7 +318,7 @@ const fetchLinkPreview = async (url) => {
                             feedbackStore.get(msg.id) === 'down'
                               ? 'bg-red-500/20 text-red-500'
                               : tempFeedback.messageId === msg.id && tempFeedback.type === 'down'
-                                ? 'bg-red-500/80 text-red-500'
+                                ? 'bg-red-500/20 text-red-500'
                                 : 'hover:bg-red-500/20 hover:text-red-500 text-gray-400'
                           }`}
                         >
@@ -333,7 +337,7 @@ const fetchLinkPreview = async (url) => {
 
         {/* Notification */}
         {notification && (
-          <div className="fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 flex items-center space-x-3 z-50 animate-fade-in">
+          <div className="z-20 fixed top-4 right-4 bg-white shadow-lg rounded-lg p-4 flex items-center space-x-3 z-50 animate-fade-in">
             {notification.icon}
             <span className="text-gray-800">{notification.message}</span>
           </div>
